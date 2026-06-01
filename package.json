@@ -1,0 +1,28 @@
+{
+  "name": "garmin-connect-backup",
+  "version": "1.0.0",
+  "description": "Simple command line tool that downloads all available data from a Garmin Connect account",
+  "keywords": [
+    "Garmin",
+    "Connect",
+    "Backup"
+  ],
+  "license": "ISC",
+  "author": "Simon Sedlatschek <code@sedlatschek.com>",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "lint": "eslint --fix src/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^25.9.1",
+    "eslint": "^10.4.1",
+    "jiti": "^2.7.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0"
+  }
+}
