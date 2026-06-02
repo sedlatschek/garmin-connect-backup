@@ -5,8 +5,8 @@ import { parseDate, parsePositiveFloat } from './parsers.js';
 export { parseDate, parsePositiveFloat };
 
 export interface BackupOptions {
-  from: string
-  to: string
+  from: DateTime<true>
+  to: DateTime<true>
   requestsPerSecond: number
 }
 
@@ -16,7 +16,7 @@ program
   .name('garmin-connect-backup')
   .description('Backs up Garmin Connect data to local files')
   .requiredOption('--from <date>', 'Start date for backup (YYYY-MM-DD)', parseDate)
-  .option('--to <date>', 'End date for backup (YYYY-MM-DD, default: today)', parseDate, DateTime.now().toISODate())
+  .option('--to <date>', 'End date for backup (YYYY-MM-DD, default: today)', parseDate, DateTime.now())
   .option('--requests-per-second <n>', 'Max Garmin API requests per second', parsePositiveFloat, 1)
   .parse(process.argv);
 

@@ -59,12 +59,3 @@ export class GarminClient {
     return schema.parse(data);
   }
 }
-
-let client: GarminClient | undefined;
-
-export async function getClient(requestsPerSecond?: number): Promise<GarminClient> {
-  if (!client) {
-    client = await GarminClient.create(requestsPerSecond);
-  }
-  return client;
-}

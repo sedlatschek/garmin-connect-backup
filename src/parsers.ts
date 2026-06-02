@@ -1,11 +1,12 @@
 import { DateTime } from 'luxon';
 
-export function parseDate(value: string): string {
+export function parseDate(value: string): DateTime<true> {
   const dateTime = DateTime.fromISO(value, { zone: 'local' });
+  dateTime.setZone('utc');
   if (!dateTime.isValid) {
     throw new Error(`Invalid date "${value}": ${dateTime.invalidExplanation}`);
   }
-  return dateTime.toISODate();
+  return dateTime;
 }
 
 export function parsePositiveFloat(value: string): number {

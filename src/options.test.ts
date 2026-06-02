@@ -1,13 +1,26 @@
 import { describe, it, expect } from 'vitest';
+import { DateTime } from 'luxon';
 import { parseDate, parsePositiveFloat } from './parsers.js';
 
 describe('parseDate', () => {
-  it('accepts a valid ISO date and returns it unchanged', () => {
-    expect(parseDate('2024-03-15')).toBe('2024-03-15');
+  it('returns a valid DateTime for a valid ISO date', () => {
+    const result = parseDate('2024-03-15');
+    expect(result).toBeInstanceOf(DateTime);
+    expect(result.isValid).toBe(true);
+  });
+
+  it('returns a DateTime with the correct year, month and day', () => {
+    const result = parseDate('2024-03-15');
+    expect(result.year).toBe(2024);
+    expect(result.month).toBe(3);
+    expect(result.day).toBe(15);
   });
 
   it('accepts the start of a year', () => {
-    expect(parseDate('2020-01-01')).toBe('2020-01-01');
+    const result = parseDate('2020-01-01');
+    expect(result.year).toBe(2020);
+    expect(result.month).toBe(1);
+    expect(result.day).toBe(1);
   });
 
   it('throws on a non-date string', () => {
