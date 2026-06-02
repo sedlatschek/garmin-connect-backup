@@ -20,4 +20,9 @@ export class LocalFileOutput implements Output {
     const path = join(this.options.outputDir, file);
     return writeFile(path, content);
   }
+
+  public async exists(file: string): Promise<boolean> {
+    const path = join(this.options.outputDir, file);
+    return exists(path);
+  }
 }

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { getClient } from '../client.js';
 import { CONNECT_API, PAGE_SIZE } from '../constants.js';
 import { join } from 'node:path';
+import { Bridge } from '../Bridge.js';
 
 const ACTIVITY_SERVICE_URL = `${CONNECT_API}/activity-service`;
 const ACTIVITY_LIST_SERVICE_URL = `${CONNECT_API}/activitylist-service`;
@@ -13,7 +14,7 @@ const activitySchema = z.object({
 
 type Activity = z.infer<typeof activitySchema>;
 
-export async function backupActivityService(addOutput: (file: string, content: object) => void): Promise<void> {
+export async function backupActivityService(bridge: Bridge): Promise<void> {
   const client = await getClient();
 
   async function getActivities(start = 0, limit = 100): Promise<Activity[]> {
@@ -44,7 +45,10 @@ export async function backupActivityService(addOutput: (file: string, content: o
   }
 
   for await (const activity of getAllActivities()) {
-    addOutput(join(ACTIVITY_OUTPUT_DIR, `${activity.activityId}_summary.json`), activity);
-    addOutput(join(ACTIVITY_OUTPUT_DIR, `${activity.activityId}.json`), await getActivity(activity.activityId));
+    await bridge.add(join(ACTIVITY_OUTPUT_DIR, `${activity.activityId}_summary.json`), activity);
+    const activityFile = join(ACTIVITY_OUTPUT_DIR, `${activity.activityId}.json`);
+    if (!await bridge.exists(activityFile)) {
+      await bridge.add(activityFile, await getActivity(activity.activityId));
+    }
   }
 }

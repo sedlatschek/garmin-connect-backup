@@ -5,17 +5,15 @@ import { LocalFileOutput } from './output/LocalFileOutput.js';
 import { JsonSerializer } from './serializer/JsonSerializer.js';
 import { OUTPUT_DIR } from './constants.js';
 import { resolve } from 'path';
+import { Bridge } from './Bridge.js';
 
 async function main(): Promise<void> {
   const output = new LocalFileOutput({ outputDir: resolve(OUTPUT_DIR) });
   const serializer = new JsonSerializer();
 
-  const bridge = async (file: string, content: object): Promise<void> => {
-    const serialized = serializer.serialize(content);
-    await output.add(file, serialized);
-  };
+  const outputSerializerBridge = new Bridge(output, serializer);
 
-  await backupActivityService(bridge);
+  await backupActivityService(outputSerializerBridge);
 }
 
 try {
