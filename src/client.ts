@@ -2,18 +2,18 @@ import { z } from 'zod';
 import { pRateLimit } from 'p-ratelimit';
 import { getValidSession, saveSession, refreshAccessToken, type PersistedSession } from './auth.js';
 
-const limit = pRateLimit({ rate: 1, interval: 1000 });
-
 export class GarminClient {
   private session: PersistedSession;
+  private readonly limit: <T>(fn: () => Promise<T>) => Promise<T>;
 
-  private constructor(session: PersistedSession) {
+  private constructor(session: PersistedSession, requestsPerSecond: number) {
     this.session = session;
+    this.limit = pRateLimit({ rate: requestsPerSecond, interval: 1000 });
   }
 
   /** Loads or refreshes the session from disk, then returns a ready client. */
-  static async create(): Promise<GarminClient> {
-    return new GarminClient(await getValidSession());
+  static async create(requestsPerSecond = 1): Promise<GarminClient> {
+    return new GarminClient(await getValidSession(), requestsPerSecond);
   }
 
   private authHeaders(): Record<string, string> {
@@ -38,12 +38,12 @@ export class GarminClient {
         },
       });
 
-    let res = await limit(send);
+    let res = await this.limit(send);
 
     // Token expired mid-flight — refresh once and retry
     if (res.status === 401) {
       await this.refreshToken();
-      res = await limit(send);
+      res = await this.limit(send);
     }
 
     if (!res.ok) {
@@ -62,9 +62,9 @@ export class GarminClient {
 
 let client: GarminClient | undefined;
 
-export async function getClient(): Promise<GarminClient> {
+export async function getClient(requestsPerSecond?: number): Promise<GarminClient> {
   if (!client) {
-    client = await GarminClient.create();
+    client = await GarminClient.create(requestsPerSecond);
   }
   return client;
 }

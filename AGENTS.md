@@ -1,5 +1,6 @@
 # Garmin Connect Backup
 
-- run `npm run typecheck` after finishing changes
-- run `npm run lint` after finishing changes
-
+- After finishing changes,
+  - run `npm run typecheck`
+  - run `npm run lint`
+  - run `npm run test`

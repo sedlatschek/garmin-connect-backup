@@ -3,6 +3,7 @@ import { getClient } from '../client.js';
 import { CONNECT_API, PAGE_SIZE } from '../constants.js';
 import { join } from 'node:path';
 import { Bridge } from '../Bridge.js';
+import { BackupOptions } from '../options.js';
 
 const ACTIVITY_SERVICE_URL = `${CONNECT_API}/activity-service`;
 const ACTIVITY_LIST_SERVICE_URL = `${CONNECT_API}/activitylist-service`;
@@ -14,12 +15,18 @@ const activitySchema = z.object({
 
 type Activity = z.infer<typeof activitySchema>;
 
-export async function backupActivityService(bridge: Bridge): Promise<void> {
-  const client = await getClient();
+export async function backupActivityService(bridge: Bridge, options: BackupOptions): Promise<void> {
+  const client = await getClient(options.requestsPerSecond);
 
   async function getActivities(start = 0, limit = 100): Promise<Activity[]> {
+    const params = new URLSearchParams({
+      start: String(start),
+      limit: String(limit),
+      startDate: options.from,
+      endDate: options.to,
+    });
     return client.get(
-      `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?start=${start}&limit=${limit}`,
+      `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?${params}`,
       z.array(activitySchema),
     );
   }
@@ -52,3 +59,4 @@ export async function backupActivityService(bridge: Bridge): Promise<void> {
     }
   }
 }
+
