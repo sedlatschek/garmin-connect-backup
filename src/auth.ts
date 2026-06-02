@@ -47,7 +47,7 @@ class CookieStore {
 
   ingest(res: Response): void {
     // getSetCookie() returns each Set-Cookie header separately (Node 18.14.1+)
-    const setCookies: string[] = (res.headers as any).getSetCookie?.() ?? [];
+    const setCookies: string[] = res.headers.getSetCookie() ?? [];
     for (const raw of setCookies) {
       const eqIdx = raw.indexOf('=');
       const scIdx = raw.indexOf(';');

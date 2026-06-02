@@ -1,59 +1,26 @@
 #!/usr/bin/env node
 
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { GarminClient } from './client.js';
-
-const OUT_DIR = 'backup';
-
-function outDir(...parts: string[]): string {
-  const dir = join(OUT_DIR, ...parts);
-  mkdirSync(dir, { recursive: true });
-  return dir;
-}
-
-function writeJson(path: string, data: unknown): void {
-  writeFileSync(path, JSON.stringify(data, null, 2));
-}
+import { backupActivityService } from './services/activity-service.js';
+import { LocalFileOutput } from './output/LocalFileOutput.js';
+import { JsonSerializer } from './serializer/JsonSerializer.js';
+import { OUTPUT_DIR } from './constants.js';
+import { resolve } from 'path';
 
 async function main(): Promise<void> {
-  const client = await GarminClient.create();
-  console.log('Session ready.');
+  const output = new LocalFileOutput({ outputDir: resolve(OUTPUT_DIR) });
+  const serializer = new JsonSerializer();
 
-  // ─── Activities ─────────────────────────────────────────────────────────────
+  const bridge = async (file: string, content: object): Promise<void> => {
+    const serialized = serializer.serialize(content);
+    await output.add(file, serialized);
+  };
 
-  const activitiesDir = outDir('activities');
-  let count = 0;
-
-  for await (const activity of client.getAllActivities()) {
-    const id = (activity as any).activityId as number;
-    const activityDir = outDir('activities', String(id));
-
-    // Summary (from the list endpoint — skip if already downloaded)
-    const summaryPath = join(activityDir, 'summary.json');
-    if (!existsSync(summaryPath)) {
-      writeJson(summaryPath, activity);
-    }
-
-    // Details
-    const detailPath = join(activityDir, 'detail.json');
-    if (!existsSync(detailPath)) {
-      try {
-        const detail = await client.getActivityDetails(id);
-        writeJson(detailPath, detail);
-      } catch (err) {
-        console.error(`  detail failed for ${id}: ${err}`);
-      }
-    }
-
-    count++;
-    console.log(`[${count}] ${id} — ${(activity as any).activityName ?? '(unnamed)'}`);
-  }
-
-  console.log(`\nDownloaded ${count} activities to ${activitiesDir}`);
+  await backupActivityService(bridge);
 }
 
-main().catch((err) => {
-  console.error(err);
+try {
+  await main();
+} catch (error) {
+  console.error('An error occurred during backup:', error);
   process.exit(1);
-});
+}

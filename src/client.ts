@@ -1,10 +1,5 @@
+import { z } from 'zod';
 import { getValidSession, saveSession, refreshAccessToken, type PersistedSession } from './auth.js';
-
-// ─── URLs ────────────────────────────────────────────────────────────────────
-
-const CONNECT_API = 'https://connectapi.garmin.com';
-
-// ─── Client ──────────────────────────────────────────────────────────────────
 
 export class GarminClient {
   private session: PersistedSession;
@@ -16,11 +11,6 @@ export class GarminClient {
   /** Loads or refreshes the session from disk, then returns a ready client. */
   static async create(): Promise<GarminClient> {
     return new GarminClient(await getValidSession());
-  }
-
-  /** Returns the current in-memory session (reflects any mid-flight token refreshes). */
-  getSession(): PersistedSession {
-    return this.session;
   }
 
   private authHeaders(): Record<string, string> {
@@ -39,7 +29,10 @@ export class GarminClient {
     const send = () =>
       fetch(url, {
         ...init,
-        headers: { ...init.headers as Record<string, string>, ...this.authHeaders() },
+        headers: {
+          ...init.headers,
+          ...this.authHeaders(),
+        },
       });
 
     let res = await send();
@@ -57,48 +50,18 @@ export class GarminClient {
     return res;
   }
 
-  // ─── Activities ──────────────────────────────────────────────────────────────
-
-  async getActivities(start = 0, limit = 100): Promise<unknown[]> {
-    const res = await this.request(
-      `${CONNECT_API}/activitylist-service/activities/search/activities?start=${start}&limit=${limit}`,
-    );
-    return res.json() as Promise<unknown[]>;
+  public async get<T extends z.ZodTypeAny>(url: string, schema: T): Promise<z.infer<T>> {
+    const response = await this.request(url);
+    const data = await response.json();
+    return schema.parse(data);
   }
+}
 
-  /** Iterates every activity across pages; yields one at a time. */
-  async* getAllActivities(pageSize = 100): AsyncGenerator<unknown, void, unknown> {
-    let start = 0;
-    while (true) {
-      const page = await this.getActivities(start, pageSize);
-      yield* page;
-      if (page.length < pageSize) break;
-      start += pageSize;
-    }
+let client: GarminClient | undefined;
+
+export async function getClient(): Promise<GarminClient> {
+  if (!client) {
+    client = await GarminClient.create();
   }
-
-  async getActivityDetails(activityId: number): Promise<unknown> {
-    const res = await this.request(
-      `${CONNECT_API}/activity-service/activity/${activityId}`,
-    );
-    return res.json();
-  }
-
-  // ─── Wellness ────────────────────────────────────────────────────────────────
-
-  /** date: YYYY-MM-DD */
-  async getDailySummary(date: string): Promise<unknown> {
-    const res = await this.request(
-      `${CONNECT_API}/usersummary-service/usersummary/daily/${date}?calendarDate=${date}`,
-    );
-    return res.json();
-  }
-
-  /** date: YYYY-MM-DD */
-  async getSleepData(date: string): Promise<unknown> {
-    const res = await this.request(
-      `${CONNECT_API}/sleep-service/sleep/dailySleepData?date=${date}`,
-    );
-    return res.json();
-  }
+  return client;
 }
