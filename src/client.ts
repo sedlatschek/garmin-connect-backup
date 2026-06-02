@@ -1,5 +1,8 @@
 import { z } from 'zod';
+import { pRateLimit } from 'p-ratelimit';
 import { getValidSession, saveSession, refreshAccessToken, type PersistedSession } from './auth.js';
+
+const limit = pRateLimit({ rate: 1, interval: 1000 });
 
 export class GarminClient {
   private session: PersistedSession;
@@ -25,7 +28,7 @@ export class GarminClient {
     saveSession(this.session);
   }
 
-  async request(url: string, init: RequestInit = {}): Promise<Response> {
+  private async request(url: string, init: RequestInit = {}): Promise<Response> {
     const send = () =>
       fetch(url, {
         ...init,
@@ -35,12 +38,12 @@ export class GarminClient {
         },
       });
 
-    let res = await send();
+    let res = await limit(send);
 
     // Token expired mid-flight — refresh once and retry
     if (res.status === 401) {
       await this.refreshToken();
-      res = await send();
+      res = await limit(send);
     }
 
     if (!res.ok) {
