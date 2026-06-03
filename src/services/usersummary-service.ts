@@ -24,10 +24,9 @@ export async function backupUserSummary(client: GarminConnectClient, bridge: Bri
     return getUserSummary('steps', userSummaryStepsSchema, from, to);
   }
 
-  for (const { from, to } of fourWeekChunks(options.from, options.to)) {
+  for (const { from, to, complete } of fourWeekChunks(options.from, options.to)) {
     const file = `${USERSUMMARY_OUTPUT_DIR}/steps_${from.toISODate()}-${to.toISODate()}.json`;
-    if (!await exists(file)) {
-      await bridge.add(file, await getSteps(from, to));
-    }
+    if (complete && await exists(file)) continue;
+    await bridge.add(file, await getSteps(from, to));
   }
 }
