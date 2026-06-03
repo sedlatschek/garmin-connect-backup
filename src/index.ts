@@ -22,7 +22,7 @@ import { getOptions } from './options/options.js';
 
 async function main(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
-  const { outputDir } = getOptions();
+  const { outputDir, from, to } = getOptions();
 
   const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger);
   const displayName = await client.getDisplayName();
@@ -45,9 +45,9 @@ async function main(): Promise<void> {
     logger.service(service.name);
     for (const endpoint of service.endpoints) {
       if (endpoint instanceof FourWeekEndpoint || endpoint instanceof DailyEndpoint) {
-        await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint });
+        await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint, from, to });
       } else if (endpoint instanceof PaginatedEndpoint) {
-        await handlePaginatedEndpoint({ ...components, service, endpoint });
+        await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
       } else {
         throw new Error(`Unknown endpoint type in service "${service.name}"`);
       }

@@ -1,17 +1,18 @@
 import { DailyEndpoint } from '../endpoint/DailyEndpoint.js';
 import { FourWeekEndpoint } from '../endpoint/FourWeekEndpoint.js';
 import { Service } from '../types/Service.js';
-import { getOptions } from '../options/options.js';
 import { join } from 'node:path';
 import { Components } from '../types/Components.js';
+import { DateTime } from 'luxon';
 
 type HandleFourWeekAndDailyEndpointOptions = Components & {
   service: Service
   endpoint: FourWeekEndpoint | DailyEndpoint
+  from: DateTime<true>
+  to: DateTime<true>
 };
 
-export async function handleFourWeekAndDailyEndpoint({ endpoint, service, client, output, serializer, logger }: HandleFourWeekAndDailyEndpointOptions): Promise<void> {
-  const { from, to } = getOptions();
+export async function handleFourWeekAndDailyEndpoint({ endpoint, service, client, output, serializer, logger, from, to }: HandleFourWeekAndDailyEndpointOptions): Promise<void> {
   for (const chunk of endpoint.chunk(from, to)) {
     const file = join(service.name, chunk.fileName);
     if (await output.exists(file)) {

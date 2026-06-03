@@ -1,16 +1,17 @@
 import { Service } from '../types/Service.js';
 import { join } from 'node:path';
 import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
-import { getOptions } from '../options/options.js';
 import { Components } from '../types/Components.js';
+import { DateTime } from 'luxon';
 
 type HandlePaginatedEndpointOptions<T> = Components & {
   service: Service
   endpoint: PaginatedEndpoint<T>
+  from: DateTime<true>
+  to: DateTime<true>
 };
 
-export async function handlePaginatedEndpoint<T>({ client, service, endpoint, output, serializer, logger }: HandlePaginatedEndpointOptions<T>): Promise<void> {
-  const { from, to } = getOptions();
+export async function handlePaginatedEndpoint<T>({ client, service, endpoint, output, serializer, logger, from, to }: HandlePaginatedEndpointOptions<T>): Promise<void> {
   const toEndOfDay = to.endOf('day');
 
   for await (const item of endpoint.chunks(client)) {
