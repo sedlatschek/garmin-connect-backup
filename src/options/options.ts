@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { DateTime } from 'luxon';
-import { parseDate, parsePositiveFloat } from '../parsers.js';
+import { parseDate, parsePositiveFloat } from './parsers.js';
 
 export { parseDate, parsePositiveFloat };
 
