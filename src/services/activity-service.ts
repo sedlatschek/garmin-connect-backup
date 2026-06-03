@@ -1,52 +1,30 @@
 import { z } from 'zod';
-import { CONNECT_API, PAGE_SIZE } from '../constants.js';
-import { join } from 'node:path';
-import { Bridge } from '../Bridge.js';
-import { GarminConnectClient } from '../client/GarminConnectClient.js';
+import { GARMIN_CONNECT_API_URL, PAGE_SIZE } from '../constants.js';
+import { Service } from '../Service.js';
+import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
 
-const ACTIVITY_SERVICE_URL = `${CONNECT_API}/activity-service`;
-const ACTIVITY_LIST_SERVICE_URL = `${CONNECT_API}/activitylist-service`;
-const ACTIVITY_OUTPUT_DIR = 'activities';
+const ACTIVITY_SERVICE_URL = `${GARMIN_CONNECT_API_URL}/activity-service`;
+const ACTIVITY_LIST_SERVICE_URL = `${GARMIN_CONNECT_API_URL}/activitylist-service`;
 
 const activitySchema = z.object({
   activityId: z.number(),
 }).loose();
 
-type Activity = z.infer<typeof activitySchema>;
-
-export async function backupActivityService(client: GarminConnectClient, bridge: Bridge): Promise<void> {
-  async function getActivities(start = 0, limit = 100): Promise<Activity[]> {
-    return client.get(
-      `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?start=${start}&limit=${limit}`,
-      z.array(activitySchema),
-    );
-  }
-
-  async function* getAllActivities(pageSize = PAGE_SIZE): AsyncGenerator<Activity, void, unknown> {
-    let start = 0;
-    while (true) {
-      const page = await getActivities(start, pageSize);
-      yield* page;
-      if (page.length < pageSize) {
-        break;
-      }
-      start += pageSize;
-    }
+export function createActivityService(): Service {
+  return {
+    name: 'activities',
+    endpoints: [
+      new PaginatedEndpoint({
+        listUrlBuilder: (start, limit) => `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?start=${start}&limit=${limit}`,
+        listSchema: z.array(activitySchema),
+        summaryFileNameBuilder: activity => `${activity.activityId}_summary.json`,
+        pageSize: PAGE_SIZE,
+        detail: {
+          urlBuilder: activity => `${ACTIVITY_SERVICE_URL}/activity/${activity.activityId}`,
+          schema: activitySchema,
+          fileNameBuilder: activity => `${activity.activityId}.json`,
+        },
+      }),
+    ],
   };
-
-  // The output of this endpoint differs from the list endpoint; it has more details.
-  function getActivity(activityId: number): Promise<Activity> {
-    return client.get(
-      `${ACTIVITY_SERVICE_URL}/activity/${activityId}`,
-      activitySchema,
-    );
-  }
-
-  for await (const activity of getAllActivities()) {
-    await bridge.add(join(ACTIVITY_OUTPUT_DIR, `${activity.activityId}_summary.json`), activity);
-    const activityFile = join(ACTIVITY_OUTPUT_DIR, `${activity.activityId}.json`);
-    if (!await bridge.exists(activityFile)) {
-      await bridge.add(activityFile, await getActivity(activity.activityId));
-    }
-  }
 }

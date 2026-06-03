@@ -1,36 +1,51 @@
 #!/usr/bin/env node
 
-import { backupActivityService } from './services/activity-service.js';
 import { LocalFileOutput } from './output/LocalFileOutput.js';
 import { JsonSerializer } from './serializer/JsonSerializer.js';
 import { OUTPUT_DIR } from './constants.js';
 import { resolve } from 'path';
-import { Bridge } from './Bridge.js';
-import { options } from './options.js';
-import { backupUserSummary } from './services/usersummary-service.js';
-import { backupSleep } from './services/sleep-service.js';
-import { backupHealthStatus } from './services/healthstatus-service.js';
+import { createActivityService } from './services/activity-service.js';
+import { createUserSummaryService } from './services/usersummary-service.js';
+import { createSleepService } from './services/sleep-service.js';
+import { createHealthStatusService } from './services/healthstatus-service.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
+import { Service } from './Service.js';
+import { FourWeekEndpoint } from './endpoint/FourWeekEndpoint.js';
+import { DailyEndpoint } from './endpoint/DailyEndpoint.js';
+import { PaginatedEndpoint } from './endpoint/PaginatedEndpoint.js';
+import { handleFourWeekAndDailyEndpoint } from './handler/handle-four-week-and-daily-endpoint.js';
+import { handlePaginatedEndpoint } from './handler/handle-paginated-endpoint.js';
 
 async function main(): Promise<void> {
-  const output = new LocalFileOutput({ outputDir: resolve(OUTPUT_DIR) });
-  const serializer = new JsonSerializer();
-  const outputSerializerBridge = new Bridge(output, serializer);
-
   const client: GarminConnectClient = new PuppeteerGarminConnectClient();
+  const displayName = await client.getDisplayName();
 
-  // console.info('Backing up activities...');
-  // await backupActivityService(client, outputSerializerBridge);
+  const components = {
+    output: new LocalFileOutput({ outputDir: resolve(OUTPUT_DIR) }),
+    serializer: new JsonSerializer(),
+    client,
+  };
 
-  console.info('Backing up user summary...');
-  await backupUserSummary(client, outputSerializerBridge, options);
+  const services: Service[] = [
+    createActivityService(),
+    createHealthStatusService(),
+    createSleepService(),
+    createUserSummaryService(displayName),
+  ];
 
-  console.info('Backing up sleep...');
-  await backupSleep(client, outputSerializerBridge, options);
-
-  console.info('Backing up health status...');
-  await backupHealthStatus(client, outputSerializerBridge, options);
+  for (const service of services) {
+    console.info(`Backing up ${service.name}...`);
+    for (const endpoint of service.endpoints) {
+      if (endpoint instanceof FourWeekEndpoint || endpoint instanceof DailyEndpoint) {
+        handleFourWeekAndDailyEndpoint({ ...components, service, endpoint });
+      } else if (endpoint instanceof PaginatedEndpoint) {
+        handlePaginatedEndpoint({ ...components, service, endpoint });
+      } else {
+        throw new Error(`Unknown endpoint type in service "${service.name}"`);
+      }
+    }
+  }
 }
 
 try {
