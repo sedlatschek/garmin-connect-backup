@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { DateTime } from 'luxon';
-import { parseDate, parsePositiveFloat } from './parsers.js';
+import { parseDate, parsePositiveFloat } from '../parsers.js';
 
 export { parseDate, parsePositiveFloat };
 
@@ -22,8 +22,10 @@ program
 
 const opts = program.opts();
 
-export const options: BackupOptions = {
-  from: opts.from,
-  to: opts.to,
-  requestsPerSecond: opts.requestsPerSecond,
-};
+export function getOptions(): BackupOptions {
+  return {
+    from: opts.from,
+    to: opts.to,
+    requestsPerSecond: opts.requestsPerSecond,
+  };
+}

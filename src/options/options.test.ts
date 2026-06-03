@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DateTime } from 'luxon';
-import { parseDate, parsePositiveFloat } from './parsers.js';
+import { parseDate, parsePositiveFloat } from '../parsers.js';
 
 describe('parseDate', () => {
   it('returns a valid DateTime for a valid ISO date', () => {
