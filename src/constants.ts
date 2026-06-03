@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 
 export const GARMIN_CONNECT_API_URL = 'https://connect.garmin.com/gc-api';
-export const PAGE_SIZE = 100;
+export const DEFAULT_PAGE_SIZE = 100;
 export const OUTPUT_DIR = './backup';
 
 /**

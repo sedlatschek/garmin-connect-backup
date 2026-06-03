@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { GarminConnectClient } from '../client/GarminConnectClient.js';
 import { Endpoint } from './Endpoint.js';
+import { DateTime } from 'luxon';
+import { DEFAULT_PAGE_SIZE } from '../constants.js';
 
 export type PaginatedChunk<T> = {
   summaryFileName: string
@@ -21,6 +23,7 @@ type PaginatedEndpointOptions<T> = {
   listSchema: z.ZodType<T[]>
   summaryFileNameBuilder: (item: T) => string
   pageSize?: number
+  dateExtractor: (item: T) => DateTime<true>
   detail?: {
     urlBuilder: (item: T) => string
     schema: z.ZodTypeAny
@@ -32,6 +35,7 @@ export class PaginatedEndpoint<T> implements Endpoint {
   // Required by Endpoint interface; the list schema is the relevant one here.
   readonly schema: z.ZodTypeAny;
   readonly fileName = '';
+  readonly dateExtractor: (item: T) => DateTime<true>;
 
   private readonly listUrlBuilder: (start: number, limit: number) => string;
   private readonly listSchema: z.ZodType<T[]>;
@@ -48,7 +52,8 @@ export class PaginatedEndpoint<T> implements Endpoint {
     this.listSchema = options.listSchema;
     this.schema = options.listSchema;
     this.summaryFileNameBuilder = options.summaryFileNameBuilder;
-    this.pageSize = options.pageSize ?? 100;
+    this.pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+    this.dateExtractor = options.dateExtractor;
     this.detail = options.detail;
   }
 
