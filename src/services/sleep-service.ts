@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { GARMIN_CONNECT_API_URL } from '../constants.js';
-import { Service } from '../Service.js';
+import { Service } from '../types/Service.js';
 import { DailyEndpoint } from '../endpoint/DailyEndpoint.js';
 import { FourWeekEndpoint } from '../endpoint/FourWeekEndpoint.js';
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { GARMIN_CONNECT_API_URL } from '../constants.js';
-import { Service } from '../Service.js';
+import { Service } from '../types/Service.js';
 import { FourWeekEndpoint } from '../endpoint/FourWeekEndpoint.js';
 
 const HEALTHSTATUS_SERVICE_URL = `${GARMIN_CONNECT_API_URL}/healthstatus-service`;

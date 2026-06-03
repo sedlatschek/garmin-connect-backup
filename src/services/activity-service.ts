@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { GARMIN_CONNECT_API_URL, DEFAULT_PAGE_SIZE } from '../constants.js';
-import { Service } from '../Service.js';
+import { Service } from '../types/Service.js';
 import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
 import { dateTimeFromGarminGmt } from '../helpers.js';
 

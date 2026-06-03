@@ -10,7 +10,7 @@ import { createSleepService } from './services/sleep-service.js';
 import { createHealthStatusService } from './services/healthstatus-service.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
-import { Service } from './Service.js';
+import { Service } from './types/Service.js';
 import { FourWeekEndpoint } from './endpoint/FourWeekEndpoint.js';
 import { DailyEndpoint } from './endpoint/DailyEndpoint.js';
 import { PaginatedEndpoint } from './endpoint/PaginatedEndpoint.js';
@@ -18,6 +18,7 @@ import { handleFourWeekAndDailyEndpoint } from './handler/handle-four-week-and-d
 import { handlePaginatedEndpoint } from './handler/handle-paginated-endpoint.js';
 import { ConsoleLogger } from './logger/ConsoleLogger.js';
 import { Logger } from './logger/Logger.js';
+import { Components } from './types/Components.js';
 
 async function main(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
@@ -25,7 +26,7 @@ async function main(): Promise<void> {
   const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger);
   const displayName = await client.getDisplayName();
 
-  const components = {
+  const components: Components = {
     logger,
     output: new LocalFileOutput({ logger, outputDir: resolve(OUTPUT_DIR) }),
     serializer: new JsonSerializer(),

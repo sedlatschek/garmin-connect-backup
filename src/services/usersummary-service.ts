@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { DateTime } from 'luxon';
 import { GARMIN_CONNECT_API_URL } from '../constants.js';
-import { Service } from '../Service.js';
+import { Service } from '../types/Service.js';
 import { FourWeekEndpoint } from '../endpoint/FourWeekEndpoint.js';
 import { DailyEndpoint } from '../endpoint/DailyEndpoint.js';
 

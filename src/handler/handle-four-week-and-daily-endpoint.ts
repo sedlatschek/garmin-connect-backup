@@ -1,21 +1,14 @@
-import { Serializer } from '../serializer/Serializer.js';
-import { GarminConnectClient } from '../client/GarminConnectClient.js';
 import { DailyEndpoint } from '../endpoint/DailyEndpoint.js';
 import { FourWeekEndpoint } from '../endpoint/FourWeekEndpoint.js';
-import { Output } from '../output/Output.js';
-import { Service } from '../Service.js';
+import { Service } from '../types/Service.js';
 import { getOptions } from '../options/options.js';
 import { join } from 'node:path';
 import { OUTPUT_DIR } from '../constants.js';
-import { Logger } from '../logger/Logger.js';
+import { Components } from '../types/Components.js';
 
-type HandleFourWeekAndDailyEndpointOptions = {
-  client: GarminConnectClient
+type HandleFourWeekAndDailyEndpointOptions = Components & {
   service: Service
   endpoint: FourWeekEndpoint | DailyEndpoint
-  output: Output
-  serializer: Serializer
-  logger: Logger
 };
 
 export async function handleFourWeekAndDailyEndpoint({ endpoint, service, client, output, serializer, logger }: HandleFourWeekAndDailyEndpointOptions): Promise<void> {
