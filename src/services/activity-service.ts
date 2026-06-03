@@ -12,6 +12,13 @@ const activitySchema = z.object({
   startTimeGMT: z.string(),
 }).loose();
 
+const activityDetailSchema = z.object({
+  activityId: z.number(),
+  summaryDTO: z.object({
+    startTimeGMT: z.string(),
+  }).loose(),
+}).loose();
+
 export function createActivityService(): Service {
   return {
     name: 'activities',
@@ -24,8 +31,9 @@ export function createActivityService(): Service {
         dateExtractor: activity => dateTimeFromGarminGmt(activity.startTimeGMT),
         detail: {
           urlBuilder: activity => `${ACTIVITY_SERVICE_URL}/activity/${activity.activityId}`,
-          schema: activitySchema,
+          schema: activityDetailSchema,
           fileNameBuilder: activity => `${activity.activityId}.json`,
+          dateExtractor: detail => dateTimeFromGarminGmt(detail.summaryDTO.startTimeGMT),
         },
       }),
     ],

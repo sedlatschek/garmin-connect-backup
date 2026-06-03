@@ -105,7 +105,12 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
       }
       return response.json();
     }, url, this.csrfToken);
-    return schema.parse(data);
+
+    try {
+      return schema.parse(data);
+    } catch (error) {
+      throw new Error(`Invalid response:\n${JSON.stringify(data)}`, { cause: error });
+    }
   }
 
   public async getDisplayName(): Promise<string> {
