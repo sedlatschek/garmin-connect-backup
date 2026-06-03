@@ -44,6 +44,14 @@ export function* monthlyChunks(start: DateTime<true>, end: DateTime<true>): Gene
   }
 }
 
+export function* daily(start: DateTime<true>, end: DateTime<true>): Generator<{ date: DateTime<true> }> {
+  let current = start.startOf('day');
+  while (current <= end) {
+    yield { date: current };
+    current = current.plus({ days: 1 });
+  }
+}
+
 export async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

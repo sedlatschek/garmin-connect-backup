@@ -3,11 +3,14 @@ import { DateTime } from 'luxon';
 import { Bridge } from '../Bridge.js';
 import { GC_API } from '../constants.js';
 import { BackupOptions } from '../options.js';
-import { fourWeekChunks } from '../helpers.js';
+import { daily, fourWeekChunks } from '../helpers.js';
 import { GarminConnectClient } from '../client/GarminConnectClient.js';
 
 const USERSUMMARY_SERVICE_URL = `${GC_API}/usersummary-service`;
 const USERSUMMARY_OUTPUT_DIR = 'usersummary';
+
+const userSummaryDailySchema = z.looseObject({});
+type UserSummaryDaily = z.infer<typeof userSummaryDailySchema>;
 
 const userSummaryStepsSchema = z.looseObject({});
 type UserSummarySteps = z.infer<typeof userSummaryStepsSchema>;
@@ -19,15 +22,11 @@ const userSummaryIntensityMinutesSchema = z.array(z.looseObject({}));
 type UserSummaryIntensityMinutes = z.infer<typeof userSummaryIntensityMinutesSchema>;
 
 export async function backupUserSummary(client: GarminConnectClient, bridge: Bridge, options: BackupOptions): Promise<void> {
-  async function getUserSummary<T extends z.ZodTypeAny>(type: 'steps', schema: T, from: DateTime<true>, to: DateTime<true>): Promise<z.infer<T>> {
+  async function getSteps(from: DateTime<true>, to: DateTime<true>): Promise<UserSummarySteps> {
     return client.get(
-      `${USERSUMMARY_SERVICE_URL}/stats/daily/${from.toISODate()}/${to.toISODate()}?statsType=${type.toUpperCase()}&currentDate=${DateTime.now().toISODate()}`,
-      schema,
+      `${USERSUMMARY_SERVICE_URL}/stats/daily/${from.toISODate()}/${to.toISODate()}?statsType=STEPS&currentDate=${DateTime.now().toISODate()}`,
+      userSummaryStepsSchema,
     );
-  }
-
-  function getSteps(from: DateTime<true>, to: DateTime<true>): Promise<UserSummarySteps> {
-    return getUserSummary('steps', userSummaryStepsSchema, from, to);
   }
 
   async function getFloors(from: DateTime<true>, to: DateTime<true>): Promise<UserSummaryFloors> {
@@ -41,6 +40,14 @@ export async function backupUserSummary(client: GarminConnectClient, bridge: Bri
     return client.get(
       `${USERSUMMARY_SERVICE_URL}/stats/im/daily/${from.toISODate()}/${to.toISODate()}`,
       userSummaryIntensityMinutesSchema,
+    );
+  }
+
+  async function getDailySummary(date: DateTime<true>): Promise<UserSummaryDaily> {
+    const userId = await client.getDisplayName();
+    return client.get(
+      `${USERSUMMARY_SERVICE_URL}/usersummary/daily/${userId}/?calendarDate=${date.toISODate()}`,
+      userSummaryDailySchema,
     );
   }
 
@@ -69,6 +76,15 @@ export async function backupUserSummary(client: GarminConnectClient, bridge: Bri
       console.info(`> Skipping ${intensityMinutesFileName} (already exists)`);
     } else {
       await bridge.add(intensityMinutesFileName, await getIntensityMinutes(from, to));
+    }
+  }
+
+  for (const { date } of daily(options.from, options.to)) {
+    const fileName = `${USERSUMMARY_OUTPUT_DIR}/daily_${date.toISODate()}.json`;
+    if (await bridge.exists(fileName)) {
+      console.info(`> Skipping ${fileName} (already exists)`);
+    } else {
+      await bridge.add(fileName, await getDailySummary(date));
     }
   }
 }

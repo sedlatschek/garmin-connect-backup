@@ -8,6 +8,7 @@ import { resolve } from 'path';
 import { Bridge } from './Bridge.js';
 import { options } from './options.js';
 import { backupUserSummary } from './services/usersummary-service.js';
+import { backupSleep } from './services/sleep-service.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
 
@@ -23,6 +24,9 @@ async function main(): Promise<void> {
 
   console.info('Backing up user summary...');
   await backupUserSummary(client, outputSerializerBridge, options);
+
+  console.info('Backing up sleep...');
+  await backupSleep(client, outputSerializerBridge, options);
 }
 
 try {

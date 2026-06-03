@@ -14,7 +14,8 @@ puppeteer.use(stealthPlugin());
 export class PuppeteerGarminConnectClient implements GarminConnectClient {
   private browser: Browser | undefined;
   private page: Page | undefined;
-  private csrfToken: string | null = null;
+  private csrfToken: string | undefined;
+  private displayName: string | undefined;
 
   private async getBrowser(): Promise<Browser> {
     if (!this.browser) {
@@ -76,16 +77,23 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
   }
 
   public async get<T extends z.ZodTypeAny>(url: string, schema: T): Promise<z.output<T>> {
+    console.info(`> Fetching ${url}`);
+
     const page = await this.getPage();
-    const data = await page.evaluate(async (url: string, csrfToken: string | null) => {
+
+    if (!this.csrfToken) {
+      throw new Error('CSRF token not found after login');
+    }
+
+    const data = await page.evaluate(async (url: string, csrfToken: string) => {
       const response = await fetch(
         url,
         {
           method: 'GET',
           credentials: 'include',
           headers: {
-            Accept: 'application/json',
-            ...(csrfToken ? { 'connect-csrf-token': csrfToken } : {}),
+            'Accept': 'application/json',
+            'connect-csrf-token': csrfToken,
           },
         },
       );
@@ -95,5 +103,25 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
       return response.json();
     }, url, this.csrfToken);
     return schema.parse(data);
+  }
+
+  public async getDisplayName(): Promise<string> {
+    if (!this.displayName) {
+      await this.getPage();
+
+      if (!this.page) {
+        throw new Error('Page not initialized');
+      }
+
+      const regex = /"displayName":"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"/;
+      const match = (await this.page.content()).match(regex);
+      if (match) {
+        this.displayName = match[1];
+      } else {
+        throw new Error('Garmin GUID not found in page source');
+      }
+    }
+
+    return this.displayName;
   }
 }
