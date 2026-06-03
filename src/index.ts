@@ -2,7 +2,6 @@
 
 import { LocalFileOutput } from './output/LocalFileOutput.js';
 import { JsonSerializer } from './serializer/JsonSerializer.js';
-import { OUTPUT_DIR } from './constants.js';
 import { resolve } from 'path';
 import { createActivityService } from './services/activity-service.js';
 import { createUserSummaryService } from './services/usersummary-service.js';
@@ -19,16 +18,18 @@ import { handlePaginatedEndpoint } from './handler/handle-paginated-endpoint.js'
 import { ConsoleLogger } from './logger/ConsoleLogger.js';
 import { Logger } from './logger/Logger.js';
 import { Components } from './types/Components.js';
+import { getOptions } from './options/options.js';
 
 async function main(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
+  const { outputDir } = getOptions();
 
   const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger);
   const displayName = await client.getDisplayName();
 
   const components: Components = {
     logger,
-    output: new LocalFileOutput({ logger, outputDir: resolve(OUTPUT_DIR) }),
+    output: new LocalFileOutput({ logger, outputDir: resolve(outputDir) }),
     serializer: new JsonSerializer(),
     client,
   };

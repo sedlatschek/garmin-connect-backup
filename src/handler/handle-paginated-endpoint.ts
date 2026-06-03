@@ -1,6 +1,5 @@
 import { Service } from '../types/Service.js';
 import { join } from 'node:path';
-import { OUTPUT_DIR } from '../constants.js';
 import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
 import { getOptions } from '../options/options.js';
 import { Components } from '../types/Components.js';
@@ -25,11 +24,11 @@ export async function handlePaginatedEndpoint<T>({ client, service, endpoint, ou
       }
     }
 
-    const summaryFile = join(OUTPUT_DIR, service.name, item.summaryFileName);
+    const summaryFile = join(service.name, item.summaryFileName);
     await output.add(summaryFile, serializer.serialize(item.summaryData));
 
     if (item.detailFileName && item.detailUrl) {
-      const detailFile = join(OUTPUT_DIR, service.name, item.detailFileName);
+      const detailFile = join(service.name, item.detailFileName);
       if (await output.exists(detailFile)) {
         logger.skip(detailFile, 'already exists');
       } else {
