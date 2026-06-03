@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { GarminClient } from '../client.js';
 import { CONNECT_API, PAGE_SIZE } from '../constants.js';
 import { join } from 'node:path';
 import { Bridge } from '../Bridge.js';
+import { GarminConnectClient } from '../client/GarminConnectClient.js';
 
 const ACTIVITY_SERVICE_URL = `${CONNECT_API}/activity-service`;
 const ACTIVITY_LIST_SERVICE_URL = `${CONNECT_API}/activitylist-service`;
@@ -14,7 +14,7 @@ const activitySchema = z.object({
 
 type Activity = z.infer<typeof activitySchema>;
 
-export async function backupActivityService(client: GarminClient, bridge: Bridge): Promise<void> {
+export async function backupActivityService(client: GarminConnectClient, bridge: Bridge): Promise<void> {
   async function getActivities(start = 0, limit = 100): Promise<Activity[]> {
     return client.get(
       `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?start=${start}&limit=${limit}`,

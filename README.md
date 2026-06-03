@@ -14,3 +14,7 @@ garmin-connect-backup --configure
 ```sh
 garmin-connect-backup
 ```
+
+## Todos
+
+- [ ] Make sure chunks are always the same time intervals, no matter when the start date is set. Otherwise the same data might be downloaded multiple times if the backup is run multiple times.

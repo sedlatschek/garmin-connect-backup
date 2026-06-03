@@ -1,4 +1,4 @@
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { Output } from './Output.js';
 import { exists } from '../helpers.js';
@@ -11,7 +11,7 @@ export class LocalFileOutput implements Output {
   constructor(private readonly options: LocalFileOutputOptions) {}
 
   public async add(file: string, content: string): Promise<void> {
-    console.log('file', file);
+    console.info('> writing ', resolve(file));
 
     const dir = dirname(join(this.options.outputDir, file));
     if (!await exists(dir)) {
