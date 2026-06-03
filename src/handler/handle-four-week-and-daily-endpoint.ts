@@ -7,6 +7,7 @@ import { Service } from '../Service.js';
 import { getOptions } from '../options/options.js';
 import { join } from 'node:path';
 import { OUTPUT_DIR } from '../constants.js';
+import { Logger } from '../logger/Logger.js';
 
 type HandleFourWeekAndDailyEndpointOptions = {
   client: GarminConnectClient
@@ -14,16 +15,16 @@ type HandleFourWeekAndDailyEndpointOptions = {
   endpoint: FourWeekEndpoint | DailyEndpoint
   output: Output
   serializer: Serializer
+  logger: Logger
 };
 
-export async function handleFourWeekAndDailyEndpoint({ endpoint, service, client, output, serializer }: HandleFourWeekAndDailyEndpointOptions): Promise<void> {
+export async function handleFourWeekAndDailyEndpoint({ endpoint, service, client, output, serializer, logger }: HandleFourWeekAndDailyEndpointOptions): Promise<void> {
   const { from, to } = getOptions();
   for (const chunk of endpoint.chunk(from, to)) {
     const file = join(OUTPUT_DIR, service.name, chunk.fileName);
     if (await output.exists(file)) {
-      console.info(`> Skipping ${file} (already exists)`);
+      logger.skip(file, 'already exists');
     } else {
-      console.info(`> Backing up ${file}...`);
       await output.add(file, serializer.serialize(await client.get(chunk.url, endpoint.schema)));
     }
   }

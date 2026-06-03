@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { OUTPUT_DIR } from '../constants.js';
 import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
 import { getOptions } from '../options/options.js';
+import { Logger } from '../logger/Logger.js';
 
 type HandlePaginatedEndpointOptions<T> = {
   client: GarminConnectClient
@@ -13,9 +14,10 @@ type HandlePaginatedEndpointOptions<T> = {
   endpoint: PaginatedEndpoint<T>
   output: Output
   serializer: Serializer
+  logger: Logger
 };
 
-export async function handlePaginatedEndpoint<T>({ client, service, endpoint, output, serializer }: HandlePaginatedEndpointOptions<T>): Promise<void> {
+export async function handlePaginatedEndpoint<T>({ client, service, endpoint, output, serializer, logger }: HandlePaginatedEndpointOptions<T>): Promise<void> {
   const { from, to } = getOptions();
   const toEndOfDay = to.endOf('day');
 
@@ -31,15 +33,13 @@ export async function handlePaginatedEndpoint<T>({ client, service, endpoint, ou
     }
 
     const summaryFile = join(OUTPUT_DIR, service.name, item.summaryFileName);
-    console.info(`> Backing up ${summaryFile}...`);
     await output.add(summaryFile, serializer.serialize(item.summaryData));
 
     if (item.detailFileName && item.detailUrl) {
       const detailFile = join(OUTPUT_DIR, service.name, item.detailFileName);
       if (await output.exists(detailFile)) {
-        console.info(`> Skipping ${detailFile} (already exists)`);
+        logger.skip(detailFile, 'already exists');
       } else {
-        console.info(`> Backing up ${detailFile}...`);
         await output.add(detailFile, serializer.serialize(await client.get(item.detailUrl, item.detailSchema)));
       }
     }

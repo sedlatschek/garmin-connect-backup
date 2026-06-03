@@ -16,13 +16,18 @@ import { DailyEndpoint } from './endpoint/DailyEndpoint.js';
 import { PaginatedEndpoint } from './endpoint/PaginatedEndpoint.js';
 import { handleFourWeekAndDailyEndpoint } from './handler/handle-four-week-and-daily-endpoint.js';
 import { handlePaginatedEndpoint } from './handler/handle-paginated-endpoint.js';
+import { ConsoleLogger } from './logger/ConsoleLogger.js';
+import { Logger } from './logger/Logger.js';
 
 async function main(): Promise<void> {
-  const client: GarminConnectClient = new PuppeteerGarminConnectClient();
+  const logger: Logger = new ConsoleLogger();
+
+  const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger);
   const displayName = await client.getDisplayName();
 
   const components = {
-    output: new LocalFileOutput({ outputDir: resolve(OUTPUT_DIR) }),
+    logger,
+    output: new LocalFileOutput({ logger, outputDir: resolve(OUTPUT_DIR) }),
     serializer: new JsonSerializer(),
     client,
   };
@@ -35,12 +40,12 @@ async function main(): Promise<void> {
   ];
 
   for (const service of services) {
-    console.info(`Backing up ${service.name}...`);
+    logger.service(service.name);
     for (const endpoint of service.endpoints) {
       if (endpoint instanceof FourWeekEndpoint || endpoint instanceof DailyEndpoint) {
-        handleFourWeekAndDailyEndpoint({ ...components, service, endpoint });
+        await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint });
       } else if (endpoint instanceof PaginatedEndpoint) {
-        handlePaginatedEndpoint({ ...components, service, endpoint });
+        await handlePaginatedEndpoint({ ...components, service, endpoint });
       } else {
         throw new Error(`Unknown endpoint type in service "${service.name}"`);
       }

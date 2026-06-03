@@ -2,8 +2,10 @@ import { join, dirname, resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { Output } from './Output.js';
 import { exists } from '../helpers.js';
+import { Logger } from '../logger/Logger.js';
 
 export type LocalFileOutputOptions = {
+  logger: Logger
   outputDir: string
 };
 
@@ -11,7 +13,7 @@ export class LocalFileOutput implements Output {
   constructor(private readonly options: LocalFileOutputOptions) {}
 
   public async add(file: string, content: string): Promise<void> {
-    console.info('> writing ', resolve(file));
+    this.options.logger.output(resolve(file));
 
     const dir = dirname(join(this.options.outputDir, file));
     if (!await exists(dir)) {

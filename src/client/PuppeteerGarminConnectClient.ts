@@ -6,6 +6,7 @@ import type { Browser, Page, HTTPRequest } from 'puppeteer';
 import stealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { GarminConnectClient } from './GarminConnectClient.js';
 import { delay } from '../helpers.js';
+import { Logger } from '../logger/Logger.js';
 
 dotenv.config();
 const puppeteer = addExtra(vanillaPuppeteer);
@@ -16,6 +17,8 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
   private page: Page | undefined;
   private csrfToken: string | undefined;
   private displayName: string | undefined;
+
+  public constructor(private readonly logger: Logger) {}
 
   private async getBrowser(): Promise<Browser> {
     if (!this.browser) {
@@ -77,7 +80,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
   }
 
   public async get<T extends z.ZodTypeAny>(url: string, schema: T): Promise<z.output<T>> {
-    console.info(`> Fetching ${url}`);
+    this.logger.fetch(url);
 
     const page = await this.getPage();
 
