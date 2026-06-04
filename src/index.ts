@@ -22,9 +22,9 @@ import { getOptions } from './options/options.js';
 
 async function main(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
-  const { outputDir, from, to } = getOptions();
+  const { outputDir, from, to, requestsPerSecond } = getOptions();
 
-  const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger);
+  const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger, requestsPerSecond);
   const displayName = await client.getDisplayName();
 
   const components: Components = {

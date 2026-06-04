@@ -4,6 +4,7 @@ import vanillaPuppeteer from 'puppeteer';
 import { addExtra } from 'puppeteer-extra';
 import type { Browser, Page, HTTPRequest } from 'puppeteer';
 import stealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { pRateLimit } from 'p-ratelimit';
 import { GarminConnectClient } from './GarminConnectClient.js';
 import { delay } from '../helpers.js';
 import { Logger } from '../logger/Logger.js';
@@ -17,8 +18,11 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
   private page: Page | undefined;
   private csrfToken: string | undefined;
   private displayName: string | undefined;
+  private readonly limit: <T>(fn: () => Promise<T>) => Promise<T>;
 
-  public constructor(private readonly logger: Logger) {}
+  public constructor(private readonly logger: Logger, requestsPerSecond: number = 1) {
+    this.limit = pRateLimit({ rate: requestsPerSecond, interval: 1000 });
+  }
 
   private async getBrowser(): Promise<Browser> {
     if (!this.browser) {
@@ -88,7 +92,8 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
       throw new Error('CSRF token not found after login');
     }
 
-    const data = await page.evaluate(async (url: string, csrfToken: string) => {
+    const csrfToken = this.csrfToken;
+    const data = await this.limit(() => page.evaluate(async (url: string, csrfToken: string) => {
       const response = await fetch(
         url,
         {
@@ -104,7 +109,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
         throw new Error(`Request to "${url}" failed with status ${response.status}: ${response.statusText}\nResponse body: ${await response.text()}`);
       }
       return response.json();
-    }, url, this.csrfToken);
+    }, url, csrfToken));
 
     try {
       return schema.parse(data);
