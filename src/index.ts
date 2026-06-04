@@ -8,6 +8,7 @@ import { createUserSummaryService } from './services/usersummary-service.js';
 import { createSleepService } from './services/sleep-service.js';
 import { createHealthStatusService } from './services/healthstatus-service.js';
 import { createBloodPressureService } from './services/bloodpressure-service.js';
+import { createGoalService } from './services/goal-service.js';
 import { createHrvService } from './services/hrv-service.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
@@ -39,6 +40,7 @@ async function main(): Promise<void> {
   const services: Service[] = [
     createActivityService(),
     createBloodPressureService(),
+    createGoalService(),
     createHealthStatusService(),
     createHrvService(),
     createSleepService(),
