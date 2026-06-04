@@ -18,7 +18,7 @@ program
   .name('garmin-connect-backup')
   .description('Backs up Garmin Connect data to local files')
   .requiredOption('--from <date>', 'Start date for backup (YYYY-MM-DD)', parseDate)
-  .option('--to <date>', 'End date for backup (YYYY-MM-DD, default: today)', parseDate, DateTime.now())
+  .option('--to <date>', 'End date for backup (YYYY-MM-DD, default: today)', parseDate, DateTime.now().minus({ days: 1 }))
   .option('--requests-per-second <n>', 'Max Garmin API requests per second', parsePositiveFloat, 1)
   .option('--output-dir <path>', 'Directory to write backup files to', OUTPUT_DIR)
   .parse(process.argv);
