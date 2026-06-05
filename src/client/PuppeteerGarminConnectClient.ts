@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { z } from 'zod';
 import vanillaPuppeteer from 'puppeteer';
 import { addExtra } from 'puppeteer-extra';
@@ -10,7 +9,6 @@ import { delay } from '../helpers.js';
 import { Logger } from '../logger/Logger.js';
 import { GarminConnectBackupError } from '../error/GarminConnectBackupError.js';
 
-dotenv.config();
 const puppeteer = addExtra(vanillaPuppeteer);
 puppeteer.use(stealthPlugin());
 
@@ -21,7 +19,12 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
   private displayName: string | undefined;
   private readonly limit: <T>(fn: () => Promise<T>) => Promise<T>;
 
-  public constructor(private readonly logger: Logger, requestsPerSecond: number = 1) {
+  public constructor(
+    private readonly logger: Logger,
+    requestsPerSecond: number = 1,
+    private readonly username: string,
+    private readonly password: string,
+  ) {
     this.limit = pRateLimit({ rate: requestsPerSecond, interval: 1000 });
   }
 
@@ -64,14 +67,8 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
 
       await page.waitForSelector('#email');
       await delay(200);
-      const username = process.env.GARMIN_USERNAME;
-      const password = process.env.GARMIN_PASSWORD;
-      if (!username || !password) {
-        throw new GarminConnectBackupError('GARMIN_USERNAME and GARMIN_PASSWORD must be set in .env');
-      }
-
-      await page.type('#email', username);
-      await page.type('#password', password);
+      await page.type('#email', this.username);
+      await page.type('#password', this.password);
       await page.click('button[type="submit"]');
 
       await page.waitForNavigation();

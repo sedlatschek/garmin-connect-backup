@@ -19,14 +19,14 @@ import { handlePaginatedEndpoint } from './handler/handle-paginated-endpoint.js'
 import { ConsoleLogger } from './logger/ConsoleLogger.js';
 import { Logger } from './logger/Logger.js';
 import { Components } from './types/Components.js';
-import { getOptions } from './options/options.js';
+import { getOptions } from './config/config.js';
 import { GarminConnectBackupError } from './error/GarminConnectBackupError.js';
 
 export async function runGarminConnectBackup(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
-  const { outputDir, from, to, requestsPerSecond } = getOptions();
+  const { outputDir, from, to, requestsPerSecond, username, password } = await getOptions();
 
-  const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger, requestsPerSecond);
+  const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger, requestsPerSecond, username, password);
   const displayName = await client.getDisplayName();
 
   const components: Components = {

@@ -1,0 +1,6 @@
+from: "2026-01-01"
+to: "2026-06-01"
+requestsPerSecond: 1
+outputDir: ./backup
+username: "your-email@example.com"
+password: "your-password"
