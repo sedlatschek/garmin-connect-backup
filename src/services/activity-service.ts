@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { GARMIN_CONNECT_API_URL, DEFAULT_PAGE_SIZE } from '../constants.js';
 import { Service } from '../types/Service.js';
 import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
+import { DailyEndpoint } from '../endpoint/DailyEndpoint.js';
+import { LiveEndpoint } from '../endpoint/LiveEndpoint.js';
 import { dateTimeFromGarminGmt } from '../helpers.js';
 
 const ACTIVITY_SERVICE_URL = `${GARMIN_CONNECT_API_URL}/activity-service`;
@@ -35,6 +37,11 @@ export function createActivityService(): Service {
           nameBuilder: activity => `${activity.activityId}`,
         },
       }),
+      new LiveEndpoint(
+        `${ACTIVITY_SERVICE_URL}/activity/activityTypes`,
+        z.array(z.looseObject({})),
+        'activity_types',
+      ),
     ],
   };
 }
