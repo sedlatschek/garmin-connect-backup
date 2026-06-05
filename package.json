@@ -11,6 +11,9 @@
   "author": "Simon Sedlatschek <code@sedlatschek.com>",
   "type": "module",
   "main": "index.js",
+  "bin": {
+    "garmin-connect-backup": "src/run.ts"
+  },
   "scripts": {
     "start": "tsx src/run.ts --config=config.yml",
     "lint": "eslint --fix src/",
