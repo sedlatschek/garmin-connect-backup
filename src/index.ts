@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { LocalFileOutput } from './output/LocalFileOutput.js';
+import { LocalFileOutputCreator } from './output/LocalFileOutputCreator.js';
 import { JsonSerializer } from './serializer/JsonSerializer.js';
 import { resolve } from 'path';
 import { createActivityService } from './services/activity-service.js';
@@ -32,7 +32,7 @@ async function main(): Promise<void> {
 
   const components: Components = {
     logger,
-    output: new LocalFileOutput({ logger, outputDir: resolve(outputDir) }),
+    outputCreator: new LocalFileOutputCreator({ logger, outputDir: resolve(outputDir) }),
     serializer: new JsonSerializer(),
     client,
   };

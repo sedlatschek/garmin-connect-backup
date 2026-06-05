@@ -1,11 +1,11 @@
 import { GarminConnectClient } from '../client/GarminConnectClient.js';
 import { Logger } from '../logger/Logger.js';
-import { Output } from '../output/Output.js';
+import { OutputCreator } from '../output/OutputCreator.js';
 import { Serializer } from '../serializer/Serializer.js';
 
 export type Components = {
   logger: Logger
-  output: Output
+  outputCreator: OutputCreator
   serializer: Serializer
   client: GarminConnectClient
 };

@@ -1,3 +1,4 @@
+import { isOutputDate, Output, OutputWithContent } from '../output/Output.js';
 import { Logger } from './Logger.js';
 
 const reset = '\x1b[0m';
@@ -20,15 +21,27 @@ export class ConsoleLogger implements Logger {
     console.info(`\n${bold}${separatorLine}\n${mainLine}\n${separatorLine}`);
   }
 
-  public skip(fileName: string, reason: 'already exists'): void {
-    console.info(`${bold}${bgYellow}${fgBlack}[SKIP]${reset}  ${fileName} (${reason})`);
+  public skip(output: Output, reason: 'already exists'): void {
+    console.info(`${bold}${bgYellow}${fgBlack}[SKIP]${reset} ${this.getOutputString(output)} (${reason})`);
   }
 
   public fetch(url: string): void {
     console.info(`${bold}${bgBlue}${fgWhite}[FETCH]${reset} ${url}`);
   }
 
-  public output(fileName: string): void {
-    console.info(`${bold}${bgGreen}${fgWhite}[WRITE]${reset} ${fileName}`);
+  public output(output: OutputWithContent): void {
+    console.info(`${bold}${bgGreen}${fgWhite}[WRITE]${reset} ${this.getOutputString(output)}`);
+  }
+
+  private getOutputString(output: Output): string {
+    return `${output.service}/${output.endpoint}: ${this.getTimestampString(output)}`;
+  }
+
+  private getTimestampString(output: Output): string {
+    if (isOutputDate(output)) {
+      return output.date.toISODate()!;
+    } else {
+      return `${output.from.toISODate()} => ${output.to.toISODate()}`;
+    }
   }
 }

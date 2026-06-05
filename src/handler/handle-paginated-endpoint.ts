@@ -1,8 +1,9 @@
 import { Service } from '../types/Service.js';
-import { join } from 'node:path';
 import { PaginatedEndpoint } from '../endpoint/PaginatedEndpoint.js';
 import { Components } from '../types/Components.js';
 import { DateTime } from 'luxon';
+import { Endpoint } from '../endpoint/Endpoint.js';
+import { Output, OutputWithContent } from '../output/Output.js';
 
 type HandlePaginatedEndpointOptions<T> = Components & {
   service: Service
@@ -11,29 +12,30 @@ type HandlePaginatedEndpointOptions<T> = Components & {
   to: DateTime<true>
 };
 
-export async function handlePaginatedEndpoint<T>({ client, service, endpoint, output, serializer, logger, from, to }: HandlePaginatedEndpointOptions<T>): Promise<void> {
+export async function handlePaginatedEndpoint<T>({ client, service, endpoint, outputCreator, serializer, logger, from, to }: HandlePaginatedEndpointOptions<T>): Promise<void> {
   const toEndOfDay = to.endOf('day');
 
-  for await (const item of endpoint.chunks(client)) {
-    if (endpoint.dateExtractor) {
-      const date = endpoint.dateExtractor(item.summaryData);
-      if (date < from) {
-        break;
-      }
-      if (date > toEndOfDay) {
-        continue;
-      }
+  for await (const chunk of endpoint.chunks(client)) {
+    const date = chunk.summaryDate;
+    if (date < from) {
+      break;
+    }
+    if (date > toEndOfDay) {
+      continue;
     }
 
-    const summaryFile = join(service.name, item.summaryFileName);
-    await output.add(summaryFile, serializer.serialize(item.summaryData));
+    const summaryEndpoint: Endpoint = { schema: endpoint.schema, name: chunk.summaryName };
+    const summaryOutputWithContent: OutputWithContent = { service, endpoint: summaryEndpoint, date, content: serializer.serialize(chunk.summaryData) };
+    await outputCreator.add(summaryOutputWithContent);
 
-    if (item.detailFileName && item.detailUrl) {
-      const detailFile = join(service.name, item.detailFileName);
-      if (await output.exists(detailFile)) {
-        logger.skip(detailFile, 'already exists');
+    if (chunk.detailName && chunk.detailUrl) {
+      const detailEndpoint: Endpoint = { schema: chunk.detailSchema, name: chunk.detailName };
+      const detailOutput: Output = { service, endpoint: detailEndpoint, date };
+      if (await outputCreator.outputExists(detailOutput)) {
+        logger.skip(detailOutput, 'already exists');
       } else {
-        await output.add(detailFile, serializer.serialize(await client.get(item.detailUrl, item.detailSchema)));
+        const detailOutputWithContent: OutputWithContent = { ...detailOutput, content: serializer.serialize(await client.get(chunk.detailUrl, chunk.detailSchema)) };
+        await outputCreator.add(detailOutputWithContent);
       }
     }
   }

@@ -26,14 +26,13 @@ export function createActivityService(): Service {
       new PaginatedEndpoint({
         listUrlBuilder: (start, limit) => `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?start=${start}&limit=${limit}`,
         listSchema: z.array(activitySchema),
-        summaryFileNameBuilder: activity => `${activity.activityId}_summary.json`,
+        summaryNameBuilder: activity => `${activity.activityId}_summary`,
         pageSize: DEFAULT_PAGE_SIZE,
         dateExtractor: activity => dateTimeFromGarminGmt(activity.startTimeGMT),
         detail: {
           urlBuilder: activity => `${ACTIVITY_SERVICE_URL}/activity/${activity.activityId}`,
           schema: activityDetailSchema,
-          fileNameBuilder: activity => `${activity.activityId}.json`,
-          dateExtractor: detail => dateTimeFromGarminGmt(detail.summaryDTO.startTimeGMT),
+          nameBuilder: activity => `${activity.activityId}`,
         },
       }),
     ],

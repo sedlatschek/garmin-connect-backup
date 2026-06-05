@@ -5,57 +5,54 @@ import { DateTime } from 'luxon';
 import { DEFAULT_PAGE_SIZE } from '../constants.js';
 
 export type PaginatedChunk<T, D = unknown> = {
-  summaryFileName: string
+  summaryName: string
+  summaryDate: DateTime<true>
   summaryData: T
-  detailFileName: string
+  detailName: string
   detailUrl: string
   detailSchema: z.ZodType<D>
-  detailDateExtractor?: (detail: D) => DateTime<true>
 } | {
-  summaryFileName: string
+  summaryName: string
+  summaryDate: DateTime<true>
   summaryData: T
-  detailFileName?: never
+  detailName?: never
   detailUrl?: never
   detailSchema?: never
-  detailDateExtractor?: never
 };
 
 type PaginatedEndpointOptions<T, D = T> = {
   listUrlBuilder: (start: number, limit: number) => string
   listSchema: z.ZodType<T[]>
-  summaryFileNameBuilder: (item: T) => string
+  summaryNameBuilder: (item: T) => string
   pageSize?: number
   dateExtractor: (item: T) => DateTime<true>
   detail?: {
     urlBuilder: (item: T) => string
+    nameBuilder: (item: T) => string
     schema: z.ZodType<D>
-    fileNameBuilder: (item: T) => string
-    dateExtractor?: (detail: D) => DateTime<true>
   }
 };
 
 export class PaginatedEndpoint<T, D = T> implements Endpoint {
-  // Required by Endpoint interface; the list schema is the relevant one here.
   readonly schema: z.ZodTypeAny;
-  readonly fileName = '';
+  readonly name = '';
   readonly dateExtractor: (item: T) => DateTime<true>;
 
   private readonly listUrlBuilder: (start: number, limit: number) => string;
   private readonly listSchema: z.ZodType<T[]>;
-  private readonly summaryFileNameBuilder: (item: T) => string;
+  private readonly summaryNameBuilder: (item: T) => string;
   private readonly pageSize: number;
   private readonly detail?: {
     urlBuilder: (item: T) => string
+    nameBuilder: (item: T) => string
     schema: z.ZodType<D>
-    fileNameBuilder: (item: T) => string
-    dateExtractor?: (detail: D) => DateTime<true>
   };
 
   constructor(options: PaginatedEndpointOptions<T, D>) {
     this.listUrlBuilder = options.listUrlBuilder;
     this.listSchema = options.listSchema;
     this.schema = options.listSchema;
-    this.summaryFileNameBuilder = options.summaryFileNameBuilder;
+    this.summaryNameBuilder = options.summaryNameBuilder;
     this.pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
     this.dateExtractor = options.dateExtractor;
     this.detail = options.detail;
@@ -66,18 +63,21 @@ export class PaginatedEndpoint<T, D = T> implements Endpoint {
     while (true) {
       const page = await client.get(this.listUrlBuilder(start, this.pageSize), this.listSchema);
       for (const item of page) {
+        const summaryName = this.summaryNameBuilder(item);
+        const summaryDate = this.dateExtractor(item);
         if (this.detail) {
           yield {
-            summaryFileName: this.summaryFileNameBuilder(item),
+            summaryName,
+            summaryDate,
             summaryData: item,
-            detailFileName: this.detail.fileNameBuilder(item),
+            detailName: this.detail.nameBuilder(item),
             detailUrl: this.detail.urlBuilder(item),
             detailSchema: this.detail.schema,
-            detailDateExtractor: this.detail.dateExtractor,
           };
         } else {
           yield {
-            summaryFileName: this.summaryFileNameBuilder(item),
+            summaryName,
+            summaryDate,
             summaryData: item,
           };
         }

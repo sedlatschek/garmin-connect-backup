@@ -120,14 +120,7 @@ describe('FourWeekEndpoint.chunk', () => {
     });
   });
 
-  describe('fileName and url', () => {
-    it('builds fileName from the filePrefix and date range', () => {
-      const ep = new FourWeekEndpoint(() => '', z.unknown(), 'summary');
-      const chunks = [...ep.chunk(anchor(0), anchor(27))];
-
-      expect(chunks[0].fileName).toBe(`summary_${anchor(0).toISODate()}_${anchor(27).toISODate()}.json`);
-    });
-
+  describe('url', () => {
     it('calls the urlBuilder with the chunk from/to dates', () => {
       const calls: Array<{ from: string, to: string }> = [];
       const ep = new FourWeekEndpoint(
