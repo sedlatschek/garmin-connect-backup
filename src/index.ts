@@ -8,10 +8,11 @@ import { createHealthStatusService } from './services/healthstatus-service.js';
 import { createBloodPressureService } from './services/bloodpressure-service.js';
 import { createGoalService } from './services/goal-service.js';
 import { createHrvService } from './services/hrv-service.js';
+import { createWeightService } from './services/weight-service.js';
+import { MultiDayEndpoint } from './endpoint/MultiDayEndpoint.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
 import { Service } from './types/Service.js';
-import { FourWeekEndpoint } from './endpoint/FourWeekEndpoint.js';
 import { DailyEndpoint } from './endpoint/DailyEndpoint.js';
 import { PaginatedEndpoint } from './endpoint/PaginatedEndpoint.js';
 import { handleFourWeekAndDailyEndpoint } from './handler/handle-four-week-and-daily-endpoint.js';
@@ -43,6 +44,7 @@ export async function runGarminConnectBackup(): Promise<void> {
     createHealthStatusService(),
     createHrvService(),
     createSleepService(),
+    createWeightService(),
     createUserSummaryService(displayName),
   ];
 
@@ -50,7 +52,7 @@ export async function runGarminConnectBackup(): Promise<void> {
   for (const service of services) {
     logger.service(service.name);
     for (const endpoint of service.endpoints) {
-      if (endpoint instanceof FourWeekEndpoint || endpoint instanceof DailyEndpoint) {
+      if (endpoint instanceof MultiDayEndpoint || endpoint instanceof DailyEndpoint) {
         const { errors } = await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint, from, to });
         allErrors.push(...errors);
       } else if (endpoint instanceof PaginatedEndpoint) {
