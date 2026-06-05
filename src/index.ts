@@ -9,6 +9,7 @@ import { createBloodPressureService } from './services/bloodpressure-service.js'
 import { createGoalService } from './services/goal-service.js';
 import { createHrvService } from './services/hrv-service.js';
 import { createWeightService } from './services/weight-service.js';
+import { createWellnessService } from './services/wellness-service.js';
 import { MultiDayEndpoint } from './endpoint/MultiDayEndpoint.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
@@ -46,6 +47,7 @@ export async function runGarminConnectBackup(): Promise<void> {
     createSleepService(),
     createWeightService(),
     createUserSummaryService(displayName),
+    createWellnessService(displayName),
   ];
 
   const allErrors: unknown[] = [];
