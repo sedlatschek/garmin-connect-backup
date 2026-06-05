@@ -1,10 +1,11 @@
 import { DateTime } from 'luxon';
+import { GarminConnectBackupError } from '../error/GarminConnectBackupError.js';
 
 export function parseDate(value: string): DateTime<true> {
   const dateTime = DateTime.fromISO(value, { zone: 'local' });
   dateTime.setZone('utc');
   if (!dateTime.isValid) {
-    throw new Error(`Invalid date "${value}": ${dateTime.invalidExplanation}`);
+    throw new GarminConnectBackupError(`Invalid date "${value}": ${dateTime.invalidExplanation}`);
   }
   return dateTime;
 }
@@ -12,7 +13,7 @@ export function parseDate(value: string): DateTime<true> {
 export function parsePositiveFloat(value: string): number {
   const float = parseFloat(value);
   if (isNaN(float) || float <= 0) {
-    throw new Error(`Invalid requestsPerSecond "${value}" — must be a positive number`);
+    throw new GarminConnectBackupError(`Invalid requestsPerSecond "${value}" — must be a positive number`);
   }
   return float;
 }

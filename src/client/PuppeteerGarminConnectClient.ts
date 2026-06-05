@@ -8,6 +8,7 @@ import { pRateLimit } from 'p-ratelimit';
 import { GarminConnectClient } from './GarminConnectClient.js';
 import { delay } from '../helpers.js';
 import { Logger } from '../logger/Logger.js';
+import { GarminConnectBackupError } from '../error/GarminConnectBackupError.js';
 
 dotenv.config();
 const puppeteer = addExtra(vanillaPuppeteer);
@@ -66,7 +67,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
       const username = process.env.GARMIN_USERNAME;
       const password = process.env.GARMIN_PASSWORD;
       if (!username || !password) {
-        throw new Error('GARMIN_USERNAME and GARMIN_PASSWORD must be set in .env');
+        throw new GarminConnectBackupError('GARMIN_USERNAME and GARMIN_PASSWORD must be set in .env');
       }
 
       await page.type('#email', username);
@@ -89,7 +90,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
     const page = await this.getPage();
 
     if (!this.csrfToken) {
-      throw new Error('CSRF token not found after login');
+      throw new GarminConnectBackupError('CSRF token not found after login');
     }
 
     const csrfToken = this.csrfToken;
@@ -106,7 +107,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
         },
       );
       if (!response.ok) {
-        throw new Error(`Request to "${url}" failed with status ${response.status}: ${response.statusText}\nResponse body: ${await response.text()}`);
+        throw new GarminConnectBackupError(`Request to "${url}" failed with status ${response.status}: ${response.statusText}\nResponse body: ${await response.text()}`);
       }
       return response.json();
     }, url, csrfToken));
@@ -114,7 +115,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
     try {
       return schema.parse(data);
     } catch (error) {
-      throw new Error(`Invalid response:\n${JSON.stringify(data)}`, { cause: error });
+      throw new GarminConnectBackupError(`Invalid response:\n${JSON.stringify(data)}`, { cause: error });
     }
   }
 
@@ -123,7 +124,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
       await this.getPage();
 
       if (!this.page) {
-        throw new Error('Page not initialized');
+        throw new GarminConnectBackupError('Page not initialized');
       }
 
       const regex = /"displayName":"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"/;
@@ -131,7 +132,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
       if (match) {
         this.displayName = match[1];
       } else {
-        throw new Error('Garmin GUID not found in page source');
+        throw new GarminConnectBackupError('Garmin GUID not found in page source');
       }
     }
 

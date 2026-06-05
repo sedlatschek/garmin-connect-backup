@@ -1,6 +1,3 @@
-#!/usr/bin/env node
-
-import { serializeError } from 'serialize-error';
 import { LocalFileOutputCreator } from './output/LocalFileOutputCreator.js';
 import { JsonSerializer } from './serializer/JsonSerializer.js';
 import { resolve } from 'path';
@@ -23,8 +20,9 @@ import { ConsoleLogger } from './logger/ConsoleLogger.js';
 import { Logger } from './logger/Logger.js';
 import { Components } from './types/Components.js';
 import { getOptions } from './options/options.js';
+import { GarminConnectBackupError } from './error/GarminConnectBackupError.js';
 
-async function main(): Promise<void> {
+export async function runGarminConnectBackup(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
   const { outputDir, from, to, requestsPerSecond } = getOptions();
 
@@ -59,19 +57,12 @@ async function main(): Promise<void> {
         const { errors } = await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
         allErrors.push(...errors);
       } else {
-        throw new Error(`Unknown endpoint type in service "${service.name}"`);
+        throw new GarminConnectBackupError(`Unknown endpoint type in service "${service.name}"`);
       }
     }
   }
 
   if (allErrors.length > 0) {
-    throw new Error(`The garmin-connect-backup run had ${allErrors.length} error${allErrors.length > 1 ? 's' : ''}`, { cause: allErrors[0] });
+    throw new GarminConnectBackupError(`The garmin-connect-backup run had ${allErrors.length} error${allErrors.length > 1 ? 's' : ''}`, { cause: allErrors[0] });
   }
-}
-
-try {
-  await main();
-} catch (error) {
-  console.error('An error occurred during backup:', serializeError(error));
-  process.exit(1);
 }

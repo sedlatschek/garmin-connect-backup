@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import { stat } from 'node:fs/promises';
+import { GarminConnectBackupError } from './error/GarminConnectBackupError.js';
 
 export async function exists(file: string): Promise<boolean> {
   try {
@@ -17,7 +18,7 @@ export async function delay(ms: number): Promise<void> {
 export function dateTimeFromIso(iso: string): DateTime<true> {
   const dateTime = DateTime.fromISO(iso);
   if (!dateTime.isValid) {
-    throw new Error(`Invalid ISO date string ${iso}`);
+    throw new GarminConnectBackupError(`Invalid ISO date string ${iso}`);
   }
   return dateTime;
 }

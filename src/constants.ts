@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import { GarminConnectBackupError } from './error/GarminConnectBackupError.js';
 
 export const GARMIN_CONNECT_API_URL = 'https://connect.garmin.com/gc-api';
 export const DEFAULT_PAGE_SIZE = 100;
@@ -14,5 +15,5 @@ export const CHUNK_ANCHOR = ((): DateTime<true> => {
   if (dateTime.isValid) {
     return dateTime;
   }
-  throw new Error('Invalid CHUNK_ANCHOR date');
+  throw new GarminConnectBackupError('Invalid CHUNK_ANCHOR date');
 })();
