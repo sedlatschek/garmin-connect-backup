@@ -15,7 +15,7 @@ export class LocalFileOutputCreator implements OutputCreator {
 
   public async add(output: OutputWithContent): Promise<void> {
     const path = join(this.options.outputDir, this.getFilePath(output));
-    this.options.logger.output(output);
+    this.options.logger.output(output, path);
 
     const dir = dirname(path);
     if (!await exists(dir)) {

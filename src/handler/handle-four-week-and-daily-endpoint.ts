@@ -18,7 +18,7 @@ export async function handleFourWeekAndDailyEndpoint({ endpoint, service, client
   for (const chunk of endpoint.chunk(from, to)) {
     const output: Output = { service, endpoint, ...('date' in chunk ? { date: chunk.date } : { from: chunk.from, to: chunk.to }) };
     if (await outputCreator.outputExists(output)) {
-      logger.skip(output, 'already exists');
+      logger.skip(output, 'Already exists');
     } else {
       try {
         const outputWithContent: OutputWithContent = { ...output, content: serializer.serialize(await client.get(chunk.url, endpoint.schema)) };

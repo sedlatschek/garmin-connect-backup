@@ -39,7 +39,7 @@ export async function handlePaginatedEndpoint<T>({ client, service, endpoint, ou
       const detailEndpoint: Endpoint = { schema: chunk.detailSchema, name: chunk.detailName };
       const detailOutput: Output = { service, endpoint: detailEndpoint, date };
       if (await outputCreator.outputExists(detailOutput)) {
-        logger.skip(detailOutput, 'already exists');
+        logger.skip(detailOutput, 'Already exists');
       } else {
         try {
           const detailOutputWithContent: OutputWithContent = { ...detailOutput, content: serializer.serialize(await client.get(chunk.detailUrl, chunk.detailSchema)) };

@@ -27,20 +27,20 @@ export class ConsoleLogger implements Logger {
     console.info(`${bold}${bgBlue}${fgWhite}[FETCH]${reset} ${url}`);
   }
 
-  public output(output: OutputWithContent): void {
-    console.info(`${bold}${bgGreen}${fgWhite}[WRITE]${reset} ${this.getOutputString(output)}`);
+  public output(output: OutputWithContent, customKey?: string): void {
+    console.info(`${bold}${bgGreen}${fgWhite}[WRITE]${reset} ${this.getOutputString(output)}${customKey ? `: ${customKey}` : ''}`);
   }
 
-  public skip(output: Output, reason: 'already exists'): void {
-    console.info(`${bold}${bgYellow}${fgBlack}[SKIP]${reset} ${this.getOutputString(output)} (${reason})`);
+  public skip(output: Output, reason: 'Already exists'): void {
+    console.info(`${bold}${bgYellow}${fgBlack}[SKIP]${reset} ${this.getOutputString(output)}: ${reason}`);
   }
 
   public error(output: Output, error: unknown): void {
-    console.error(`${bold}${bgRed}${fgWhite}[ERROR]${reset} ${this.getOutputString(output)}: ${serializeError(error)}`);
+    console.error(`${bold}${bgRed}${fgWhite}[ERROR]${reset} ${this.getOutputString(output)}: ${JSON.stringify(serializeError(error))}`);
   }
 
   private getOutputString(output: Output): string {
-    return `${output.service.name}/${output.endpoint.name}: ${this.getTimestampString(output)}`;
+    return `${output.service.name}/${output.endpoint.name}/${this.getTimestampString(output)}`;
   }
 
   private getTimestampString(output: Output): string {
