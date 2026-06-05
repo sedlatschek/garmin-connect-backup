@@ -5,7 +5,7 @@
 ## Installation
 
 ```sh
-npm i -G garmin-connect-backup`
+npm i -G garmin-connect-backup
 garmin-connect-backup --configure
 ```
 
@@ -14,3 +14,8 @@ garmin-connect-backup --configure
 ```sh
 garmin-connect-backup
 ```
+
+## ToDo
+
+- [ ] Configurable content for backups (which services/endpoints)
+- [ ] Configurable if content is saved only on per day basis
