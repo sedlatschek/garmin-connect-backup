@@ -10,6 +10,9 @@ import { createGoalService } from './services/goal-service.js';
 import { createHrvService } from './services/hrv-service.js';
 import { createWeightService } from './services/weight-service.js';
 import { createWellnessService } from './services/wellness-service.js';
+import { createDeviceService } from './services/device-service.js';
+import { LiveEndpoint } from './endpoint/LiveEndpoint.js';
+import { handleLiveEndpoint } from './handler/handle-live-endpoint.js';
 import { MultiDayEndpoint } from './endpoint/MultiDayEndpoint.js';
 import { GarminConnectClient } from './client/GarminConnectClient.js';
 import { PuppeteerGarminConnectClient } from './client/PuppeteerGarminConnectClient.js';
@@ -48,6 +51,7 @@ export async function runGarminConnectBackup(): Promise<void> {
     createWeightService(),
     createUserSummaryService(displayName),
     createWellnessService(displayName),
+    createDeviceService(displayName),
   ];
 
   const allErrors: unknown[] = [];
@@ -59,6 +63,9 @@ export async function runGarminConnectBackup(): Promise<void> {
         allErrors.push(...errors);
       } else if (endpoint instanceof PaginatedEndpoint) {
         const { errors } = await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
+        allErrors.push(...errors);
+      } else if (endpoint instanceof LiveEndpoint) {
+        const { errors } = await handleLiveEndpoint({ ...components, service, endpoint });
         allErrors.push(...errors);
       } else {
         throw new GarminConnectBackupError(`Unknown endpoint type in service "${service.name}"`);
