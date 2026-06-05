@@ -11,6 +11,7 @@ import { createHrvService } from './services/hrv-service.js';
 import { createWeightService } from './services/weight-service.js';
 import { createWellnessService } from './services/wellness-service.js';
 import { createDeviceService } from './services/device-service.js';
+import { createUserProfileService } from './services/userprofile-service.js';
 import { LiveEndpoint } from './endpoint/LiveEndpoint.js';
 import { handleLiveEndpoint } from './handler/handle-live-endpoint.js';
 import { MultiDayEndpoint } from './endpoint/MultiDayEndpoint.js';
@@ -52,6 +53,7 @@ export async function runGarminConnectBackup(): Promise<void> {
     createUserSummaryService(displayName),
     createWellnessService(displayName),
     createDeviceService(displayName),
+    createUserProfileService(displayName),
   ];
 
   const allErrors: unknown[] = [];
