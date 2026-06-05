@@ -1,3 +1,4 @@
+import { serializeError } from 'serialize-error';
 import { isOutputDate, Output, OutputWithContent } from '../output/Output.js';
 import { Logger } from './Logger.js';
 
@@ -6,6 +7,7 @@ const bold = '\x1b[1m';
 const bgYellow = '\x1b[43m';
 const bgBlue = '\x1b[44m';
 const bgGreen = '\x1b[42m';
+const bgRed = '\x1b[41m';
 const fgBlack = '\x1b[30m';
 const fgWhite = '\x1b[37m';
 
@@ -21,10 +23,6 @@ export class ConsoleLogger implements Logger {
     console.info(`\n${bold}${separatorLine}\n${mainLine}\n${separatorLine}`);
   }
 
-  public skip(output: Output, reason: 'already exists'): void {
-    console.info(`${bold}${bgYellow}${fgBlack}[SKIP]${reset} ${this.getOutputString(output)} (${reason})`);
-  }
-
   public fetch(url: string): void {
     console.info(`${bold}${bgBlue}${fgWhite}[FETCH]${reset} ${url}`);
   }
@@ -33,8 +31,16 @@ export class ConsoleLogger implements Logger {
     console.info(`${bold}${bgGreen}${fgWhite}[WRITE]${reset} ${this.getOutputString(output)}`);
   }
 
+  public skip(output: Output, reason: 'already exists'): void {
+    console.info(`${bold}${bgYellow}${fgBlack}[SKIP]${reset} ${this.getOutputString(output)} (${reason})`);
+  }
+
+  public error(output: Output, error: unknown): void {
+    console.error(`${bold}${bgRed}${fgWhite}[ERROR]${reset} ${this.getOutputString(output)}: ${serializeError(error)}`);
+  }
+
   private getOutputString(output: Output): string {
-    return `${output.service}/${output.endpoint}: ${this.getTimestampString(output)}`;
+    return `${output.service.name}/${output.endpoint.name}: ${this.getTimestampString(output)}`;
   }
 
   private getTimestampString(output: Output): string {

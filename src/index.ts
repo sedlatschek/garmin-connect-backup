@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { serializeError } from 'serialize-error';
 import { LocalFileOutputCreator } from './output/LocalFileOutputCreator.js';
 import { JsonSerializer } from './serializer/JsonSerializer.js';
 import { resolve } from 'path';
@@ -47,23 +48,30 @@ async function main(): Promise<void> {
     createUserSummaryService(displayName),
   ];
 
+  const allErrors: unknown[] = [];
   for (const service of services) {
     logger.service(service.name);
     for (const endpoint of service.endpoints) {
       if (endpoint instanceof FourWeekEndpoint || endpoint instanceof DailyEndpoint) {
-        await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint, from, to });
+        const { errors } = await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint, from, to });
+        allErrors.push(...errors);
       } else if (endpoint instanceof PaginatedEndpoint) {
-        await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
+        const { errors } = await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
+        allErrors.push(...errors);
       } else {
         throw new Error(`Unknown endpoint type in service "${service.name}"`);
       }
     }
+  }
+
+  if (allErrors.length > 0) {
+    throw new Error(`The garmin-connect-backup run had ${allErrors.length} error${allErrors.length > 1 ? 's' : ''}`, { cause: allErrors[0] });
   }
 }
 
 try {
   await main();
 } catch (error) {
-  console.error('An error occurred during backup:', error);
+  console.error('An error occurred during backup:', serializeError(error));
   process.exit(1);
 }

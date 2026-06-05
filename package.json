@@ -38,6 +38,7 @@
     "puppeteer": "^25.1.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "serialize-error": "^13.0.1",
     "zod": "^4.4.3"
   }
 }

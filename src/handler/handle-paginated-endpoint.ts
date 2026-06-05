@@ -4,6 +4,7 @@ import { Components } from '../types/Components.js';
 import { DateTime } from 'luxon';
 import { Endpoint } from '../endpoint/Endpoint.js';
 import { Output, OutputWithContent } from '../output/Output.js';
+import { HandlerResult } from './HandlerResult.js';
 
 type HandlePaginatedEndpointOptions<T> = Components & {
   service: Service
@@ -12,8 +13,9 @@ type HandlePaginatedEndpointOptions<T> = Components & {
   to: DateTime<true>
 };
 
-export async function handlePaginatedEndpoint<T>({ client, service, endpoint, outputCreator, serializer, logger, from, to }: HandlePaginatedEndpointOptions<T>): Promise<void> {
+export async function handlePaginatedEndpoint<T>({ client, service, endpoint, outputCreator, serializer, logger, from, to }: HandlePaginatedEndpointOptions<T>): Promise<HandlerResult> {
   const toEndOfDay = to.endOf('day');
+  const errors: unknown[] = [];
 
   for await (const chunk of endpoint.chunks(client)) {
     const date = chunk.summaryDate;
@@ -26,7 +28,12 @@ export async function handlePaginatedEndpoint<T>({ client, service, endpoint, ou
 
     const summaryEndpoint: Endpoint = { schema: endpoint.schema, name: chunk.summaryName };
     const summaryOutputWithContent: OutputWithContent = { service, endpoint: summaryEndpoint, date, content: serializer.serialize(chunk.summaryData) };
-    await outputCreator.add(summaryOutputWithContent);
+    try {
+      await outputCreator.add(summaryOutputWithContent);
+    } catch (error) {
+      logger.error(summaryOutputWithContent, error);
+      errors.push(error);
+    }
 
     if (chunk.detailName && chunk.detailUrl) {
       const detailEndpoint: Endpoint = { schema: chunk.detailSchema, name: chunk.detailName };
@@ -34,9 +41,16 @@ export async function handlePaginatedEndpoint<T>({ client, service, endpoint, ou
       if (await outputCreator.outputExists(detailOutput)) {
         logger.skip(detailOutput, 'already exists');
       } else {
-        const detailOutputWithContent: OutputWithContent = { ...detailOutput, content: serializer.serialize(await client.get(chunk.detailUrl, chunk.detailSchema)) };
-        await outputCreator.add(detailOutputWithContent);
+        try {
+          const detailOutputWithContent: OutputWithContent = { ...detailOutput, content: serializer.serialize(await client.get(chunk.detailUrl, chunk.detailSchema)) };
+          await outputCreator.add(detailOutputWithContent);
+        } catch (error) {
+          logger.error(detailOutput, error);
+          errors.push(error);
+        }
       }
     }
   }
+
+  return { errors };
 }
