@@ -13,6 +13,7 @@ import { createWellnessService } from './services/wellness-service.js';
 import { createDeviceService } from './services/device-service.js';
 import { createUserProfileService } from './services/userprofile-service.js';
 import { createFitnessAgeService } from './services/fitnessage-service.js';
+import { createNutritionService } from './services/nutrition-service.js';
 import { LiveEndpoint } from './endpoint/LiveEndpoint.js';
 import { handleLiveEndpoint } from './handler/handle-live-endpoint.js';
 import { MultiDayEndpoint } from './endpoint/MultiDayEndpoint.js';
@@ -56,6 +57,7 @@ export async function runGarminConnectBackup(): Promise<void> {
     createDeviceService(displayName),
     createUserProfileService(displayName),
     createFitnessAgeService(),
+    createNutritionService(),
   ];
 
   const allErrors: unknown[] = [];
