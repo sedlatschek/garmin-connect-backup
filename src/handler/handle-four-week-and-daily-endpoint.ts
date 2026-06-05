@@ -1,5 +1,5 @@
 import { DailyEndpoint } from '../endpoint/DailyEndpoint.js';
-import { FourWeekEndpoint } from '../endpoint/FourWeekEndpoint.js';
+import { MultiDayEndpoint } from '../endpoint/MultiDayEndpoint.js';
 import { Service } from '../types/Service.js';
 import { Components } from '../types/Components.js';
 import { DateTime } from 'luxon';
@@ -8,7 +8,7 @@ import { HandlerResult } from './HandlerResult.js';
 
 type HandleFourWeekAndDailyEndpointOptions = Components & {
   service: Service
-  endpoint: FourWeekEndpoint | DailyEndpoint
+  endpoint: MultiDayEndpoint | DailyEndpoint
   from: DateTime<true>
   to: DateTime<true>
 };
