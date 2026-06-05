@@ -104,7 +104,7 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
         },
       );
       if (!response.ok) {
-        throw new GarminConnectBackupError(`Request to "${url}" failed with status ${response.status}: ${response.statusText}\nResponse body: ${await response.text()}`);
+        throw new Error(`Request to "${url}" failed with status ${response.status}: ${response.statusText}\nResponse body: ${await response.text()}`);
       }
       return response.json();
     }, url, csrfToken));
