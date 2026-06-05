@@ -11,8 +11,8 @@ export function createHrvService(): Service {
   return {
     name: 'hrv-service',
     endpoints: [
-      new FourWeekEndpoint((from, to) => `${HRV_SERVICE_URL}/hrv/daily/${from.toISODate()}/${to.toISODate()}`, hrvSchema, 'summary'),
-      new DailyEndpoint(date => `${HRV_SERVICE_URL}/hrv/${date.toISODate()}`, hrvSchema, 'daily'),
+      new FourWeekEndpoint((from, to) => `${HRV_SERVICE_URL}/hrv/daily/${from.toISODate()}/${to.toISODate()}`, hrvSchema, 'hrv_summary'),
+      new DailyEndpoint(date => `${HRV_SERVICE_URL}/hrv/${date.toISODate()}`, hrvSchema, 'hrv'),
     ],
   };
 }

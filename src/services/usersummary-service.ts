@@ -18,14 +18,14 @@ export function createUserSummaryService(userId: string): Service {
       new FourWeekEndpoint(
         (from, to) => `${USERSUMMARY_SERVICE_URL}/stats/daily/${from.toISODate()}/${to.toISODate()}?statsType=STEPS&currentDate=${DateTime.now().toISODate()}`,
         userSummaryStepsSchema,
-        'steps',
+        'steps_summary',
       ),
-      new FourWeekEndpoint((from, to) => `${USERSUMMARY_SERVICE_URL}/stats/floors/daily/${from.toISODate()}/${to.toISODate()}`, userSummaryFloorsSchema, 'floors'),
-      new FourWeekEndpoint((from, to) => `${USERSUMMARY_SERVICE_URL}/stats/im/daily/${from.toISODate()}/${to.toISODate()}`, userSummaryIntensityMinutesSchema, 'intensityMinutes'),
+      new FourWeekEndpoint((from, to) => `${USERSUMMARY_SERVICE_URL}/stats/floors/daily/${from.toISODate()}/${to.toISODate()}`, userSummaryFloorsSchema, 'floors_summary'),
+      new FourWeekEndpoint((from, to) => `${USERSUMMARY_SERVICE_URL}/stats/im/daily/${from.toISODate()}/${to.toISODate()}`, userSummaryIntensityMinutesSchema, 'intensityMinutes_summary'),
       new DailyEndpoint(
         date => `${USERSUMMARY_SERVICE_URL}/usersummary/daily/${userId}/?calendarDate=${date.toISODate()}`,
         userSummaryDailySchema,
-        'daily',
+        'user_summary',
       ),
     ],
   };

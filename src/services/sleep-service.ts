@@ -11,11 +11,11 @@ export function createSleepService(): Service {
   return {
     name: 'sleep-service',
     endpoints: [
-      new FourWeekEndpoint((from, to) => `${SLEEP_SERVICE_URL}/stats/sleep/daily/${from.toISODate()}/${to.toISODate()}`, sleepSummarySchema, 'summary'),
+      new FourWeekEndpoint((from, to) => `${SLEEP_SERVICE_URL}/stats/sleep/daily/${from.toISODate()}/${to.toISODate()}`, sleepSummarySchema, 'sleep_summary'),
       new DailyEndpoint(
         date => `${SLEEP_SERVICE_URL}/sleep/dailySleepData/?date=${date.toISODate()}&nonSleepBufferMinutes=60`,
         sleepSummarySchema,
-        'daily',
+        'sleep',
       ),
     ],
   };

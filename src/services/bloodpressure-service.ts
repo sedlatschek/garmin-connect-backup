@@ -10,7 +10,7 @@ export function createBloodPressureService(): Service {
   return {
     name: 'bloodpressure-service',
     endpoints: [
-      new DailyEndpoint(date => `${BLOODPRESSURE_SERVICE_URL}/bloodpressure/dayview/${date.toISODate()}`, bloodPressureSchema, 'daily'),
+      new DailyEndpoint(date => `${BLOODPRESSURE_SERVICE_URL}/bloodpressure/dayview/${date.toISODate()}`, bloodPressureSchema, 'bloodpressure'),
     ],
   };
 }

@@ -10,7 +10,7 @@ export function createHealthStatusService(): Service {
   return {
     name: 'healthstatus-service',
     endpoints: [
-      new FourWeekEndpoint((from, to) => `${HEALTHSTATUS_SERVICE_URL}/healthstatus/summary/${from.toISODate()}/${to.toISODate()}`, healthStatusSchema, 'summary'),
+      new FourWeekEndpoint((from, to) => `${HEALTHSTATUS_SERVICE_URL}/healthstatus/summary/${from.toISODate()}/${to.toISODate()}`, healthStatusSchema, 'healthstatus_summary'),
     ],
   };
 }

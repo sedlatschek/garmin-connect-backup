@@ -6,8 +6,11 @@
   "eslint.useFlatConfig": true,
   "cSpell.words": [
     "activitylist",
+    "BLOODPRESSURE",
+    "dayview",
     "HEALTHSTATUS",
     "luxon",
-    "USERSUMMARY"
+    "USERSUMMARY",
+    "weightgoal"
   ],
 }

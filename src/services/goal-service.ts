@@ -10,7 +10,7 @@ export function createGoalService(): Service {
   return {
     name: 'goal-service',
     endpoints: [
-      new FourWeekEndpoint((from, to) => `${GOAL_SERVICE_URL}/goal/user/effective/weightgoal/${from.toISODate()}/${to.toISODate()}`, goalSchema, 'weightgoal'),
+      new FourWeekEndpoint((from, to) => `${GOAL_SERVICE_URL}/goal/user/effective/weightgoal/${from.toISODate()}/${to.toISODate()}`, goalSchema, 'weightgoal_summary'),
     ],
   };
 }
