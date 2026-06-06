@@ -116,6 +116,14 @@ export class PuppeteerGarminConnectClient implements GarminConnectClient {
     }
   }
 
+  public async close(): Promise<void> {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = undefined;
+      this.page = undefined;
+    }
+  }
+
   public async getDisplayName(): Promise<string> {
     if (!this.displayName) {
       await this.getPage();

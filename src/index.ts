@@ -37,57 +37,61 @@ export async function runGarminConnectBackup(): Promise<void> {
   const { outputDir, from, to, requestsPerSecond, username, password, services: enabledServices } = await getOptions();
 
   const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger, requestsPerSecond, username, password);
-  const displayName = await client.getDisplayName();
+  try {
+    const displayName = await client.getDisplayName();
 
-  const components: Components = {
-    logger,
-    outputCreator: new LocalFileOutputCreator({ logger, outputDir: resolve(outputDir) }),
-    serializer: new JsonSerializer(),
-    client,
-  };
+    const components: Components = {
+      logger,
+      outputCreator: new LocalFileOutputCreator({ logger, outputDir: resolve(outputDir) }),
+      serializer: new JsonSerializer(),
+      client,
+    };
 
-  const allServices: Service[] = [
-    createActivityService(),
-    createBloodPressureService(),
-    createGoalService(),
-    createHealthStatusService(),
-    createHrvService(),
-    createSleepService(),
-    createWeightService(),
-    createUserSummaryService(displayName),
-    createWellnessService(displayName),
-    createDeviceService(displayName),
-    createUserProfileService(displayName),
-    createFitnessAgeService(),
-    createNutritionService(),
-    createUserStatsService(displayName),
-    createMetricsService(),
-  ];
+    const allServices: Service[] = [
+      createActivityService(),
+      createBloodPressureService(),
+      createGoalService(),
+      createHealthStatusService(),
+      createHrvService(),
+      createSleepService(),
+      createWeightService(),
+      createUserSummaryService(displayName),
+      createWellnessService(displayName),
+      createDeviceService(displayName),
+      createUserProfileService(displayName),
+      createFitnessAgeService(),
+      createNutritionService(),
+      createUserStatsService(displayName),
+      createMetricsService(),
+    ];
 
-  const services: Service[] = enabledServices
-    ? allServices.filter(s => enabledServices.includes(s.name))
-    : allServices;
+    const services: Service[] = enabledServices
+      ? allServices.filter(s => enabledServices.includes(s.name))
+      : allServices;
 
-  const allErrors: unknown[] = [];
-  for (const service of services) {
-    logger.service(service.name);
-    for (const endpoint of service.endpoints) {
-      if (endpoint instanceof MultiDayEndpoint || endpoint instanceof DailyEndpoint) {
-        const { errors } = await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint, from, to });
-        allErrors.push(...errors);
-      } else if (endpoint instanceof PaginatedEndpoint) {
-        const { errors } = await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
-        allErrors.push(...errors);
-      } else if (endpoint instanceof LiveEndpoint) {
-        const { errors } = await handleLiveEndpoint({ ...components, service, endpoint });
-        allErrors.push(...errors);
-      } else {
-        throw new GarminConnectBackupError(`Unknown endpoint type in service "${service.name}"`);
+    const allErrors: unknown[] = [];
+    for (const service of services) {
+      logger.service(service.name);
+      for (const endpoint of service.endpoints) {
+        if (endpoint instanceof MultiDayEndpoint || endpoint instanceof DailyEndpoint) {
+          const { errors } = await handleFourWeekAndDailyEndpoint({ ...components, service, endpoint, from, to });
+          allErrors.push(...errors);
+        } else if (endpoint instanceof PaginatedEndpoint) {
+          const { errors } = await handlePaginatedEndpoint({ ...components, service, endpoint, from, to });
+          allErrors.push(...errors);
+        } else if (endpoint instanceof LiveEndpoint) {
+          const { errors } = await handleLiveEndpoint({ ...components, service, endpoint });
+          allErrors.push(...errors);
+        } else {
+          throw new GarminConnectBackupError(`Unknown endpoint type in service "${service.name}"`);
+        }
       }
     }
-  }
 
-  if (allErrors.length > 0) {
-    throw new GarminConnectBackupError(`The garmin-connect-backup run had ${allErrors.length} error${allErrors.length > 1 ? 's' : ''}`, { cause: allErrors[0] });
+    if (allErrors.length > 0) {
+      throw new GarminConnectBackupError(`The garmin-connect-backup run had ${allErrors.length} error${allErrors.length > 1 ? 's' : ''}`, { cause: allErrors[0] });
+    }
+  } finally {
+    await client.close();
   }
 }
