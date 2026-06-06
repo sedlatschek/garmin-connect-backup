@@ -15,6 +15,7 @@ export const configFileSchema = z.object({
   outputDir: z.string().optional(),
   username: z.string().optional(),
   password: z.string().optional(),
+  services: z.array(z.string()).optional(),
 });
 
 export type ConfigFile = z.output<typeof configFileSchema>;
@@ -26,4 +27,5 @@ export type BackupOptions = {
   outputDir: string
   username: string
   password: string
+  services: string[] | undefined
 };

@@ -23,6 +23,7 @@ program
   .option('--output-dir <path>', 'Directory to write backup files to')
   .option('--username <email>', 'Garmin Connect username / email')
   .option('--password <password>', 'Garmin Connect password')
+  .option('--services <names>', 'Comma-separated list of services to back up (default: all)')
   .parse(process.argv);
 
 const opts = program.opts();
@@ -84,12 +85,17 @@ export async function getOptions(): Promise<BackupOptions> {
     ?? process.env.GARMIN_PASSWORD
     ?? await promptPassword('Garmin password: ');
 
+  const cliServices: string[] | undefined = typeof opts.services === 'string'
+    ? opts.services.split(',').map(s => s.trim()).filter(Boolean)
+    : undefined;
+
   return {
     from,
-    to: opts.to ?? config.to ?? DateTime.now().minus({ days: 1 }) as DateTime<true>,
+    to: opts.to ?? config.to ?? DateTime.now().minus({ days: 1 }),
     requestsPerSecond: opts.requestsPerSecond ?? config.requestsPerSecond ?? 1,
     outputDir: opts.outputDir ?? config.outputDir ?? OUTPUT_DIR,
     username,
     password,
+    services: cliServices ?? config.services,
   };
 }

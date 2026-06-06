@@ -31,6 +31,7 @@ Options can be provided via CLI flags, a YAML config file, or environment variab
 | `--username <email>` | Garmin Connect username / email | — |
 | `--password <password>` | Garmin Connect password | — |
 | `--requests-per-second <n>` | Max Garmin API requests per second | `1` |
+| `--services <names>` | Comma-separated list of services to back up | *(all)* |
 
 ### Config file
 
@@ -43,7 +44,13 @@ outputDir: "./my-backup"
 username: "your@email.com"
 password: "yourpassword"
 requestsPerSecond: 2
+services:
+  - activities
+  - sleep-service
+  - hrv-service
 ```
+
+Omitting `services` (or leaving it out entirely) backs up all services.
 
 ### Environment variables
 
@@ -84,8 +91,6 @@ The following data is downloaded from Garmin Connect:
 | `wellness-service` | SpO2, respiration, sleep, events, stress, body battery |
 
 ## ToDo
-
-- [ ] Configurable content for backups (which services/endpoints)
 - [ ] Configurable if content is saved only on per day basis
 - [ ] fitnessstats-service
 - [ ] wellness-activity-service

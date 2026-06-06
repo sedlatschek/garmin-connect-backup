@@ -34,7 +34,7 @@ import { GarminConnectBackupError } from './error/GarminConnectBackupError.js';
 
 export async function runGarminConnectBackup(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
-  const { outputDir, from, to, requestsPerSecond, username, password } = await getOptions();
+  const { outputDir, from, to, requestsPerSecond, username, password, services: enabledServices } = await getOptions();
 
   const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger, requestsPerSecond, username, password);
   const displayName = await client.getDisplayName();
@@ -46,7 +46,7 @@ export async function runGarminConnectBackup(): Promise<void> {
     client,
   };
 
-  const services: Service[] = [
+  const allServices: Service[] = [
     createActivityService(),
     createBloodPressureService(),
     createGoalService(),
@@ -63,6 +63,10 @@ export async function runGarminConnectBackup(): Promise<void> {
     createUserStatsService(displayName),
     createMetricsService(),
   ];
+
+  const services: Service[] = enabledServices
+    ? allServices.filter(s => enabledServices.includes(s.name))
+    : allServices;
 
   const allErrors: unknown[] = [];
   for (const service of services) {
