@@ -21,6 +21,7 @@ export type PaginatedChunk<T, D = unknown> = {
 };
 
 type PaginatedEndpointOptions<T, D = T> = {
+  name: string
   listUrlBuilder: (start: number, limit: number) => string
   listSchema: z.ZodType<T[]>
   summaryNameBuilder: (item: T) => string
@@ -35,7 +36,7 @@ type PaginatedEndpointOptions<T, D = T> = {
 
 export class PaginatedEndpoint<T, D = T> implements Endpoint {
   readonly schema: z.ZodTypeAny;
-  readonly name = '';
+  readonly name: string;
   readonly dateExtractor: (item: T) => DateTime<true>;
 
   private readonly listUrlBuilder: (start: number, limit: number) => string;
@@ -49,6 +50,7 @@ export class PaginatedEndpoint<T, D = T> implements Endpoint {
   };
 
   constructor(options: PaginatedEndpointOptions<T, D>) {
+    this.name = options.name;
     this.listUrlBuilder = options.listUrlBuilder;
     this.listSchema = options.listSchema;
     this.schema = options.listSchema;

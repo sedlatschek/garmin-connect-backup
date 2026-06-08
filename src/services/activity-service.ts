@@ -25,6 +25,7 @@ export function createActivityService(): Service {
     name: 'activities',
     endpoints: [
       new PaginatedEndpoint({
+        name: 'activities',
         listUrlBuilder: (start, limit) => `${ACTIVITY_LIST_SERVICE_URL}/activities/search/activities?start=${start}&limit=${limit}`,
         listSchema: z.array(activitySchema),
         summaryNameBuilder: activity => `${activity.activityId}_summary`,
