@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DateTime } from 'luxon';
 import { parseDate, parsePositiveFloat } from './parsers.js';
+import { configFileSchema } from './schema.js';
 
 describe('parseDate', () => {
   it('returns a valid DateTime for a valid ISO date', () => {
@@ -67,5 +68,44 @@ describe('parsePositiveFloat', () => {
 
   it('throws on an empty string', () => {
     expect(() => parsePositiveFloat('')).toThrow('must be a positive number');
+  });
+});
+
+describe('configFileSchema', () => {
+  it('parses services as an array of strings', () => {
+    const result = configFileSchema.safeParse({ from: '2024-01-01', services: ['sleep-service', 'hrv-service'] });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.services).toEqual(['sleep-service', 'hrv-service']);
+  });
+
+  it('services is optional', () => {
+    const result = configFileSchema.safeParse({ from: '2024-01-01' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.services).toBeUndefined();
+  });
+
+  it('parses endpoints as an array of strings', () => {
+    const result = configFileSchema.safeParse({ from: '2024-01-01', endpoints: ['sleep', 'hrv'] });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.endpoints).toEqual(['sleep', 'hrv']);
+  });
+
+  it('endpoints is optional', () => {
+    const result = configFileSchema.safeParse({ from: '2024-01-01' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.endpoints).toBeUndefined();
+  });
+
+  it('accepts both services and endpoints together', () => {
+    const result = configFileSchema.safeParse({
+      from: '2024-01-01',
+      services: ['sleep-service'],
+      endpoints: ['sleep'],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.services).toEqual(['sleep-service']);
+      expect(result.data.endpoints).toEqual(['sleep']);
+    }
   });
 });

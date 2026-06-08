@@ -32,6 +32,7 @@ Options can be provided via CLI flags, a YAML config file, or environment variab
 | `--password <password>` | Garmin Connect password | — |
 | `--requests-per-second <n>` | Max Garmin API requests per second | `1` |
 | `--services <names>` | Comma-separated list of services to back up | *(all)* |
+| `--endpoints <names>` | Comma-separated list of endpoints to back up | *(all)* |
 
 ### Config file
 
@@ -48,9 +49,21 @@ services:
   - activities
   - sleep-service
   - hrv-service
+endpoints:
+  - sleep
+  - hrv
 ```
 
-Omitting `services` (or leaving it out entirely) backs up all services.
+Omitting `services` backs up all services. Omitting `endpoints` backs up all endpoints within the selected services. When `endpoints` is specified, only endpoints whose name matches are backed up; services with no matching endpoints are skipped. Endpoint names correspond to the output file names (e.g. `sleep`, `sleep_summary`, `hrv`, `hrv_summary`).
+
+When the same endpoint name exists in multiple services (e.g. `sleep` appears in both `sleep-service` and `wellness-service`), use the qualified `service/endpoint` form to target a specific one:
+
+```yaml
+endpoints:
+  - sleep-service/sleep     # only sleep-service's sleep endpoint
+  - wellness-service/sleep  # only wellness-service's sleep endpoint
+  - hrv                     # unqualified — matches hrv in any selected service
+```
 
 ### Environment variables
 

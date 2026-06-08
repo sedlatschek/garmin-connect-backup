@@ -31,10 +31,11 @@ import { Logger } from './logger/Logger.js';
 import { Components } from './types/Components.js';
 import { getOptions } from './config/config.js';
 import { GarminConnectBackupError } from './error/GarminConnectBackupError.js';
+import { validateServiceAndEndpointNames, parseEndpointFilter } from './validate.js';
 
 export async function runGarminConnectBackup(): Promise<void> {
   const logger: Logger = new ConsoleLogger();
-  const { outputDir, from, to, requestsPerSecond, username, password, services: enabledServices } = await getOptions();
+  const { outputDir, from, to, requestsPerSecond, username, password, services: enabledServices, endpoints: enabledEndpoints } = await getOptions();
 
   const client: GarminConnectClient = new PuppeteerGarminConnectClient(logger, requestsPerSecond, username, password);
   try {
@@ -65,9 +66,23 @@ export async function runGarminConnectBackup(): Promise<void> {
       createMetricsService(),
     ];
 
-    const services: Service[] = enabledServices
+    validateServiceAndEndpointNames(allServices, enabledServices, enabledEndpoints);
+
+    const services: Service[] = (enabledServices
       ? allServices.filter(s => enabledServices.includes(s.name))
-      : allServices;
+      : allServices
+    ).map(service => enabledEndpoints
+      ? {
+        ...service,
+        endpoints: service.endpoints.filter(e =>
+          enabledEndpoints.some((f) => {
+            const { serviceName, endpointName } = parseEndpointFilter(f);
+            return endpointName === e.name && (serviceName === undefined || serviceName === service.name);
+          }),
+        ),
+      }
+      : service,
+    ).filter(service => service.endpoints.length > 0);
 
     const allErrors: unknown[] = [];
     for (const service of services) {

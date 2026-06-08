@@ -24,6 +24,7 @@ program
   .option('--username <email>', 'Garmin Connect username / email')
   .option('--password <password>', 'Garmin Connect password')
   .option('--services <names>', 'Comma-separated list of services to back up (default: all)')
+  .option('--endpoints <names>', 'Comma-separated list of endpoints to back up (default: all)')
   .parse(process.argv);
 
 const opts = program.opts();
@@ -89,6 +90,10 @@ export async function getOptions(): Promise<BackupOptions> {
     ? opts.services.split(',').map(s => s.trim()).filter(Boolean)
     : undefined;
 
+  const cliEndpoints: string[] | undefined = typeof opts.endpoints === 'string'
+    ? opts.endpoints.split(',').map(s => s.trim()).filter(Boolean)
+    : undefined;
+
   return {
     from,
     to: opts.to ?? config.to ?? DateTime.now().minus({ days: 1 }),
@@ -97,5 +102,6 @@ export async function getOptions(): Promise<BackupOptions> {
     username,
     password,
     services: cliServices ?? config.services,
+    endpoints: cliEndpoints ?? config.endpoints,
   };
 }
